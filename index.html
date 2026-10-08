@@ -806,59 +806,47 @@
     </div>
   </section>
 
-      <!-- WAITLIST -->
+      <! pa- WAIT
   <section id="daftar">
     <div class="waitlist-box">
       <h2>Daftar Waitlist</h2>
-      <p>
-        KH AI sedang dalam tahap pengembangan. Daftarkan email kamu sekarang
-        untuk mendapat akses awal dan diskon 50% untuk bulan pertama.
-      </p>
+      <p>KH AI sedang dikembangkan. Daftarkan email kamu untuk akses awal dan diskon 50% bulan pertama.</p>
       <form class="waitlist-form" onsubmit="daftar(event)">
         <input type="email" id="email" placeholder="email@kamu.com" required>
-        <button type="submit">Daftar</button>
+        <button type="submit" id="btnDaftar">Daftar</button>
       </form>
       <div class="waitlist-msg" id="msg"></div>
     </div>
   </section>
 
-  <!-- FAQ -->
   <section id="faq">
     <span class="section-tag">FAQ</span>
     <h2 class="section-title">Pertanyaan umum</h2>
-
     <div class="faq">
-
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Kapan KH AI launching?</div>
-        <div class="faq-a">KH AI sedang dalam tahap pengembangan. Target launching pada kuartal berikutnya. Yang sudah daftar waitlist akan mendapat akses lebih awal sebelum publik.</div>
+        <div class="faq-a">Sedang dikembangkan. Yang daftar waitlist dapat akses lebih awal.</div>
       </div>
-
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Apakah KH AI gratis?</div>
-        <div class="faq-a">Ya, ada tier gratis dengan 5 request per hari. Kalau butuh lebih banyak, bisa upgrade ke tier berbayar mulai Rp 25.000 per bulan.</div>
+        <div class="faq-q">Apakah gratis?</div>
+        <div class="faq-a">Ya, ada tier gratis 5 request per hari. Upgrade mulai Rp 25.000 per bulan.</div>
       </div>
-
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Bagaimana cara bayarnya?</div>
-        <div class="faq-a">Kami akan mendukung QRIS, DANA, OVO, GoPay, ShopeePay, dan transfer bank. Tidak perlu kartu kredit internasional.</div>
+        <div class="faq-q">Cara bayarnya?</div>
+        <div class="faq-a">QRIS, DANA, OVO, GoPay, ShopeePay, transfer bank.</div>
       </div>
-
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Apakah data saya aman?</div>
-        <div class="faq-a">Kami tidak menjual data pengguna ke pihak ketiga. Riwayat obrolan disimpan terenkripsi dan bisa dihapus kapan saja dari dashboard.</div>
+        <div class="faq-q">Data saya aman?</div>
+        <div class="faq-a">Data tidak dijual ke pihak ketiga. Bisa dihapus kapan saja.</div>
       </div>
-
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Bisa diakses dari HP?</div>
-        <div class="faq-a">Ya. KH AI bisa diakses langsung lewat browser HP tanpa install apapun. Bisa juga dipasang sebagai aplikasi (PWA) dari menu Chrome.</div>
+        <div class="faq-a">Ya, lewat browser HP langsung. Bisa dipasang sebagai PWA.</div>
       </div>
-
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Apakah butuh VPN?</div>
-        <div class="faq-a">Tidak. KH AI dihosting dengan server yang bisa diakses langsung dari Indonesia tanpa VPN.</div>
+        <div class="faq-q">Butuh VPN?</div>
+        <div class="faq-a">Tidak. Bisa diakses langsung dari Indonesia.</div>
       </div>
-
     </div>
   </section>
 
@@ -883,203 +871,129 @@
 </div>
 
 <script>
-/* =========================================================
-   BACKGROUND: HUJAN ABU-ABU + MERAH NEON + PETIR JARANG
-   ========================================================= */
+const ACCESS_KEY = "525458eb-8c41-4fa0-b323-748fadff8656";
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
-let W = 0, H = 0, DPR = 1;
-let drops = [], bolts = [];
+let W=0,H=0,DPR=1,drops=[],bolts=[];
 
-function resizeCanvas() {
+function resizeCanvas(){
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  W = window.innerWidth;
-  H = window.innerHeight;
-  canvas.width = W * DPR;
-  canvas.height = H * DPR;
-  canvas.style.width = W + "px";
-  canvas.style.height = H + "px";
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  buildDrops();
-}
-
-function makeDrop(spawnAnywhere) {
-  const isRed = Math.random() < 0.45;
-  const speed = 1.8 + Math.random() * 6;
-  return {
-    x: Math.random() * W,
-    y: spawnAnywhere ? Math.random() * H : -Math.random() * H * 0.4,
-    len: 25 + Math.random() * 140,
-    speed: speed,
-    alpha: 0.04 + Math.random() * 0.26,
-    width: Math.random() < 0.1 ? 2 : 1,
-    color: isRed ? "red" : "gray"
-  };
-}
-
-function buildDrops() {
-  const count = Math.round(Math.min(Math.max(W / 16, 40), 110));
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+"px"; canvas.style.height = H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const n = Math.round(Math.min(Math.max(W/16,40),110));
   drops = [];
-  for (let i = 0; i < count; i++) drops.push(makeDrop(true));
+  for (let i=0;i<n;i++) drops.push(makeDrop(true));
 }
-
-function buildBolt() {
-  const startX = Math.random() * W;
-  const points = [{ x: startX, y: -30 }];
-  let cx = startX;
-  let cy = -30;
-  const maxY = H + 40;
-
-  while (cy < maxY) {
-    cy += 22 + Math.random() * 48;
-    cx += (Math.random() - 0.5) * 72;
-    points.push({ x: cx, y: cy });
-  }
-
-  bolts.push({
-    points: points,
-    life: 1,
-    decay: 0.045 + Math.random() * 0.05,
-    width: Math.random() < 0.3 ? 2 : 1.1,
-    color: Math.random() < 0.6 ? "red" : "gray"
-  });
+function makeDrop(s){
+  return { x: Math.random()*W, y: s ? Math.random()*H : -Math.random()*H*0.4,
+    len: 25+Math.random()*140, speed: 1.8+Math.random()*6,
+    alpha: 0.04+Math.random()*0.26, width: Math.random()<0.1?2:1,
+    color: Math.random()<0.45 ? "red" : "gray" };
 }
-
-function drawRain() {
+function buildBolt(){
+  const sx = Math.random()*W;
+  const p = [{x:sx,y:-30}]; let cx=sx, cy=-30;
+  while (cy < H+40){ cy += 22+Math.random()*48; cx += (Math.random()-0.5)*72; p.push({x:cx,y:cy}); }
+  bolts.push({points:p, life:1, decay:0.045+Math.random()*0.05,
+    width: Math.random()<0.3?2:1.1, color: Math.random()<0.6?"red":"gray"});
+}
+function drawRain(){
   ctx.lineCap = "round";
-  for (let i = 0; i < drops.length; i++) {
+  for (let i=0;i<drops.length;i++){
     const d = drops[i];
-    const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.len);
-
-    if (d.color === "red") {
-      g.addColorStop(0, "rgba(255,26,60,0)");
-      g.addColorStop(0.45, "rgba(255,26,60," + d.alpha * 0.7 + ")");
-      g.addColorStop(1, "rgba(255,80,110," + d.alpha + ")");
+    const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y+d.len);
+    if (d.color === "red"){
+      g.addColorStop(0,"rgba(255,26,60,0)");
+      g.addColorStop(0.45,"rgba(255,26,60,"+d.alpha*0.7+")");
+      g.addColorStop(1,"rgba(255,80,110,"+d.alpha+")");
     } else {
-      g.addColorStop(0, "rgba(128,128,128,0)");
-      g.addColorStop(0.45, "rgba(128,128,128," + d.alpha * 0.7 + ")");
-      g.addColorStop(1, "rgba(180,180,180," + d.alpha + ")");
+      g.addColorStop(0,"rgba(128,128,128,0)");
+      g.addColorStop(0.45,"rgba(128,128,128,"+d.alpha*0.7+")");
+      g.addColorStop(1,"rgba(180,180,180,"+d.alpha+")");
     }
-
-    ctx.strokeStyle = g;
-    ctx.lineWidth = d.width;
-    ctx.beginPath();
-    ctx.moveTo(d.x, d.y);
-    ctx.lineTo(d.x, d.y + d.len);
-    ctx.stroke();
-
+    ctx.strokeStyle = g; ctx.lineWidth = d.width;
+    ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x,d.y+d.len); ctx.stroke();
     d.y += d.speed;
-
-    if (d.y > H + 40) {
-      const nd = makeDrop(false);
-      d.x = nd.x; d.y = nd.y; d.len = nd.len; d.speed = nd.speed;
-      d.alpha = nd.alpha; d.width = nd.width; d.color = nd.color;
-    }
+    if (d.y > H+40){ const nd = makeDrop(false);
+      d.x=nd.x; d.y=nd.y; d.len=nd.len; d.speed=nd.speed;
+      d.alpha=nd.alpha; d.width=nd.width; d.color=nd.color; }
   }
 }
-
-function drawBolts() {
-  for (let i = bolts.length - 1; i >= 0; i--) {
-    const b = bolts[i];
-    const a = Math.max(b.life, 0);
-
-    ctx.save();
-    ctx.globalAlpha = a;
-
-    if (b.color === "red") {
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = "rgba(255,26,60,0.9)";
-      ctx.strokeStyle = "rgba(255,60,90," + (0.85 * a) + ")";
+function drawBolts(){
+  for (let i=bolts.length-1;i>=0;i--){
+    const b = bolts[i], a = Math.max(b.life,0);
+    ctx.save(); ctx.globalAlpha = a;
+    if (b.color === "red"){
+      ctx.shadowBlur=20; ctx.shadowColor="rgba(255,26,60,0.9)";
+      ctx.strokeStyle="rgba(255,60,90,"+(0.85*a)+")";
     } else {
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = "rgba(180,180,180,0.8)";
-      ctx.strokeStyle = "rgba(200,200,200," + (0.7 * a) + ")";
+      ctx.shadowBlur=14; ctx.shadowColor="rgba(180,180,180,0.8)";
+      ctx.strokeStyle="rgba(200,200,200,"+(0.7*a)+")";
     }
-
-    ctx.lineWidth = b.width;
-    ctx.lineJoin = "miter";
-    ctx.beginPath();
-    ctx.moveTo(b.points[0].x, b.points[0].y);
-    for (let p = 1; p < b.points.length; p++) {
-      ctx.lineTo(b.points[p].x, b.points[p].y);
-    }
+    ctx.lineWidth=b.width; ctx.lineJoin="miter";
+    ctx.beginPath(); ctx.moveTo(b.points[0].x,b.points[0].y);
+    for (let p=1;p<b.points.length;p++) ctx.lineTo(b.points[p].x,b.points[p].y);
     ctx.stroke();
-
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255,255,255," + (0.5 * a) + ")";
-    ctx.lineWidth = b.width * 0.35;
-    ctx.stroke();
-    ctx.restore();
-
-    b.life -= b.decay;
-    if (b.life <= 0) bolts.splice(i, 1);
+    ctx.shadowBlur=0; ctx.strokeStyle="rgba(255,255,255,"+(0.5*a)+")";
+    ctx.lineWidth=b.width*0.35; ctx.stroke(); ctx.restore();
+    b.life -= b.decay; if (b.life <= 0) bolts.splice(i,1);
   }
 }
-
-let lastBolt = 0;
-let nextBoltDelay = 4000;
-
-function loop(ts) {
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, W, H);
-
+let lastBolt=0, nextBoltDelay=4000;
+function loop(ts){
+  ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
   drawRain();
-
-  if (ts - lastBolt > nextBoltDelay) {
-    buildBolt();
-    lastBolt = ts;
-    nextBoltDelay = 4000 + Math.random() * 8000;
-    if (Math.random() < 0.12) setTimeout(buildBolt, 120);
+  if (ts-lastBolt > nextBoltDelay){
+    buildBolt(); lastBolt = ts;
+    nextBoltDelay = 4000+Math.random()*8000;
+    if (Math.random()<0.12) setTimeout(buildBolt,120);
   }
-
-  drawBolts();
-  requestAnimationFrame(loop);
+  drawBolts(); requestAnimationFrame(loop);
 }
-
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 requestAnimationFrame(loop);
 
-/* =========================================================
-   FAQ TOGGLE
-   ========================================================= */
-function toggleFaq(el) {
-  const isOpen = el.classList.contains("open");
-  document.querySelectorAll(".faq-item").forEach(function (i) {
-    i.classList.remove("open");
-  });
-  if (!isOpen) el.classList.add("open");
+function toggleFaq(el){
+  const o = el.classList.contains("open");
+  document.querySelectorAll(".faq-item").forEach(function(i){i.classList.remove("open");});
+  if (!o) el.classList.add("open");
 }
-
-/* =========================================================
-   WAITLIST FORM
-   ========================================================= */
-function daftar(e) {
+function daftar(e){
   e.preventDefault();
   const email = document.getElementById("email").value.trim();
   const msg = document.getElementById("msg");
-
-  if (!email || email.indexOf("@") === -1) {
+  if (!email || email.indexOf("@") === -1){
     msg.textContent = "Email tidak valid.";
-    msg.style.color = "#808080";
-    return;
+    msg.style.color = "#808080"; return;
   }
-
-  let list = JSON.parse(localStorage.getItem("khai_waitlist") || "[]");
-
-  if (list.indexOf(email) !== -1) {
-    msg.textContent = "Email ini sudah terdaftar.";
+  fetch("https://api.web3forms.com/submit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      access_key: ACCESS_KEY,
+      subject: "KH AI - Pendaftar Baru",
+      email: email,
+      message: "Pendaftar: " + email
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.success){
+      msg.textContent = "Terdaftar. Cek email untuk info diskon 50%.";
+      msg.style.color = "#ff1a3c";
+      document.getElementById("email").value = "";
+    } else {
+      msg.textContent = "Gagal daftar.";
+      msg.style.color = "#808080";
+    }
+  })
+  .catch(function(){
+    msg.textContent = "Koneksi error.";
     msg.style.color = "#808080";
-    return;
-  }
-
-  list.push(email);
-  localStorage.setItem("khai_waitlist", JSON.stringify(list));
-
-  msg.textContent = "Terdaftar. Terima kasih, kamu masuk waitlist.";
-  msg.style.color = "#ff1a3c";
-  document.getElementById("email").value = "";
+  });
 }
 </script>
 
