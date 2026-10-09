@@ -133,7 +133,6 @@ code{font-family:'Courier New',monospace}
 .modal-btns button{padding:12px 24px;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.1em;cursor:pointer;border:1px solid #222;background:transparent;color:#909090}
 .modal-btns button:hover{border-color:#ff0033;color:#ff0033}
 .modal-btns .primary{background:#ff0033;color:#000;border-color:#ff0033;font-weight:700}
-.modal-btns .primary:hover{box-shadow:0 0 20px rgba(255,0,51,.6)}
 @media(max-width:600px){main{padding:14px 12px}.bubble{font-size:13.5px}header{padding:10px 12px}.stage{width:170px;height:170px}.core{width:100px;height:100px}.ring2{inset:16px}.ring3{inset:32px}pre{font-size:11.5px}.preview iframe{height:240px}}
 </style>
 </head>
@@ -231,20 +230,11 @@ code{font-family:'Courier New',monospace}
 </div>
 
 <script>
-
-  const WORKER_URL = "https://kh-backend-liard.vercel.app/api/chat";
-
-/* ===== STORAGE CHAT ===== */
-function loadChats(){
-  try{return JSON.parse(localStorage.getItem("khai_chats")||"[]");}catch(e){return[];}
-}
+const WORKER_URL = "https://kh-backend-liard.vercel.app/api/chat.html"
+  function loadChats(){try{return JSON.parse(localStorage.getItem("khai_chats")||"[]");}catch(e){return[];}}
 function saveChats(c){localStorage.setItem("khai_chats",JSON.stringify(c));}
+let chats=loadChats(),currentChatId=null,hist=[],busy=false;
 
-let chats = loadChats();
-let currentChatId = null;
-let hist = [];
-
-/* ===== BACKGROUND ===== */
 const cv=document.getElementById("bg"),cx=cv.getContext("2d");
 let W,H,dr=[],bo=[],lB=0,nB=4000;
 function rz(){const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+"px";cv.style.height=H+"px";cx.setTransform(d,0,0,d,0,0);const n=Math.round(Math.min(Math.max(W/18,35),90));dr=[];for(let i=0;i<n;i++)dr.push(mk(true));}
@@ -255,10 +245,8 @@ for(let i=bo.length-1;i>=0;i--){const b=bo[i],a=Math.max(b.l,0);cx.save();cx.glo
 function lp(ts){cx.clearRect(0,0,W,H);cx.fillStyle="#000";cx.fillRect(0,0,W,H);drw();if(ts-lB>nB){mb();lB=ts;nB=4000+Math.random()*8000;if(Math.random()<.12)setTimeout(mb,120);}requestAnimationFrame(lp);}
 rz();addEventListener("resize",rz);requestAnimationFrame(lp);
 
-/* ===== CHAT ===== */
 const chat=document.getElementById("chat"),wrap=document.getElementById("wrap"),inp=document.getElementById("in"),btn=document.getElementById("send"),hero=document.getElementById("hero");
 const sidebar=document.getElementById("sidebar"),overlay=document.getElementById("overlay"),sbList=document.getElementById("sbList");
-let busy=false;
 
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
 function bt(){chat.scrollTop=chat.scrollHeight;}
@@ -267,124 +255,39 @@ function hideHero(){if(hero)hero.classList.add("hidden");}
 function showHero(){if(hero)hero.classList.remove("hidden");}
 
 function parseMarkdown(text){
-  // Escape HTML dulu biar aman
-  let html = text
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
-
-  // Simpen inline code dulu biar gak ke-parse
-  const inlineCodes = [];
-  html = html.replace(/`([^`\n]+?)`/g, function(m, code){
-    inlineCodes.push(code);
-    return "\u0000IC" + (inlineCodes.length - 1) + "\u0000";
-  });
-
-  // Bold **teks** dan __teks__
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/__(.+?)__/g, "<strong>$1</strong>");
-
-  // Italic *teks* dan _teks_
-  html = html.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>");
-  html = html.replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>");
-
-  // Strikethrough ~~teks~~
-  html = html.replace(/~~(.+?)~~/g, '<span style="text-decoration:line-through;opacity:.7;">$1</span>');
-
-  // Link [teks](url)
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#ff0033;text-decoration:underline;">$1</a>');
-
-  // Gambar ![alt](url)
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;">');
-
-  // Heading
-  html = html.replace(/^### (.+)$/gm, '<div style="font-size:15px;font-weight:700;color:#fff;margin:12px 0 6px;letter-spacing:.05em;">$1</div>');
-  html = html.replace(/^## (.+)$/gm, '<div style="font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;letter-spacing:.05em;">$1</div>');
-  html = html.replace(/^# (.+)$/gm, '<div style="font-size:20px;font-weight:800;color:#fff;margin:16px 0 10px;letter-spacing:.08em;">$1</div>');
-
-  // Horizontal rule
-  html = html.replace(/^---+$/gm, '<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
-  html = html.replace(/^\*\*\*+$/gm, '<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
-
-  // Quote > teks
-  html = html.replace(/^&gt; (.+)$/gm, '<div style="border-left:3px solid #ff0033;padding:6px 12px;margin:8px 0;color:#b0b0b0;font-style:italic;background:rgba(255,0,51,.04);border-radius:0 6px 6px 0;">$1</div>');
-
-  // Bullet list - item (dengan indentasi)
-  html = html.replace(/^(\s*)[-\*\+] (.+)$/gm, function(m, indent, content){
-    const pad = 16 + (indent.length * 8);
-    return '<div style="padding-left:'+pad+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(pad-12)+'px;color:#ff0033;">•</span>'+content+'</div>';
-  });
-
-  // Numbered list
-  html = html.replace(/^(\s*)(\d+)\. (.+)$/gm, function(m, indent, num, content){
-    const pad = 16 + (indent.length * 8);
-    return '<div style="padding-left:'+pad+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(pad-14)+'px;color:#ff0033;font-weight:700;">'+num+'.</span>'+content+'</div>';
-  });
-
-  // Tabel markdown sederhana
-  const lines = html.split("\n");
-  let inTable = false;
-  let tableRows = [];
-  const newLines = [];
-
-  for(let i = 0; i < lines.length; i++){
-    const line = lines[i].trim();
-    if(line.startsWith("|") && line.endsWith("|")){
-      // skip separator row |---|---|
-      if(/^\|[\s\-:]+\|$/.test(line)) continue;
-      const cells = line.split("|").slice(1, -1).map(c => c.trim());
-      tableRows.push(cells);
-      inTable = true;
-    } else {
-      if(inTable && tableRows.length){
-        newLines.push(renderTable(tableRows));
-        tableRows = [];
-        inTable = false;
-      }
-      newLines.push(lines[i]);
-    }
-  }
-  if(inTable && tableRows.length){
-    newLines.push(renderTable(tableRows));
-  }
-  html = newLines.join("\n");
-
-  // Line break
-  html = html.replace(/\n/g, "<br>");
-
-  // Balikin inline code
-  html = html.replace(/\u0000IC(\d+)\u0000/g, function(m, i){
-    const code = inlineCodes[parseInt(i)];
-    return '<code style="background:#151515;padding:2px 6px;border-radius:4px;color:#ff5577;font-size:12.5px;border:1px solid #222;">'+code+'</code>';
-  });
-
+  let html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const ic=[];
+  html=html.replace(/`([^`\n]+?)`/g,function(m,c){ic.push(c);return "\u0000IC"+(ic.length-1)+"\u0000";});
+  html=html.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  html=html.replace(/__(.+?)__/g,"<strong>$1</strong>");
+  html=html.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g,"$1<em>$2</em>");
+  html=html.replace(/(^|[^_])_([^_\n]+?)_(?!_)/g,"$1<em>$2</em>");
+  html=html.replace(/~~(.+?)~~/g,'<span style="text-decoration:line-through;opacity:.7;">$1</span>');
+  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#ff0033;text-decoration:underline;">$1</a>');
+  html=html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;">');
+  html=html.replace(/^### (.+)$/gm,'<div style="font-size:15px;font-weight:700;color:#fff;margin:12px 0 6px;">$1</div>');
+  html=html.replace(/^## (.+)$/gm,'<div style="font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;">$1</div>');
+  html=html.replace(/^# (.+)$/gm,'<div style="font-size:20px;font-weight:800;color:#fff;margin:16px 0 10px;">$1</div>');
+  html=html.replace(/^---+$/gm,'<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
+  html=html.replace(/^&gt; (.+)$/gm,'<div style="border-left:3px solid #ff0033;padding:6px 12px;margin:8px 0;color:#b0b0b0;font-style:italic;background:rgba(255,0,51,.04);border-radius:0 6px 6px 0;">$1</div>');
+  html=html.replace(/^(\s*)[-\*\+] (.+)$/gm,function(m,i,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(p-12)+'px;color:#ff0033;">•</span>'+c+'</div>';});
+  html=html.replace(/^(\s*)(\d+)\. (.+)$/gm,function(m,i,n,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(p-14)+'px;color:#ff0033;font-weight:700;">'+n+'.</span>'+c+'</div>';});
+  html=html.replace(/\n/g,"<br>");
+  html=html.replace(/\u0000IC(\d+)\u0000/g,function(m,i){return '<code style="background:#151515;padding:2px 6px;border-radius:4px;color:#ff5577;font-size:12.5px;border:1px solid #222;">'+ic[parseInt(i)]+'</code>';});
   return html;
 }
 
 function renderTable(rows){
-  if(!rows.length) return "";
-  let html = '<div style="overflow-x:auto;margin:12px 0;"><table style="width:100%;border-collapse:collapse;background:#080808;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden;font-size:12.5px;">';
-  
-  // Header
-  html += '<thead><tr>';
-  rows[0].forEach(cell => {
-    html += '<th style="background:#0d0d0d;color:#ff0033;padding:10px 12px;text-align:left;border-bottom:1px solid #1e1e1e;font-size:11px;letter-spacing:.1em;text-transform:uppercase;">'+cell+'</th>';
-  });
-  html += '</tr></thead><tbody>';
-  
-  // Body
-  for(let i = 1; i < rows.length; i++){
-    html += '<tr>';
-    rows[i].forEach(cell => {
-      html += '<td style="padding:10px 12px;color:#c0c0c0;border-bottom:1px solid #141414;">'+cell+'</td>';
-    });
-    html += '</tr>';
-  }
-  
-  html += '</tbody></table></div>';
+  if(!rows.length)return "";
+  let html='<div style="overflow-x:auto;margin:12px 0;"><table style="width:100%;border-collapse:collapse;background:#080808;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden;font-size:12.5px;"><thead><tr>';
+  rows[0].forEach(function(c){html+='<th style="background:#0d0d0d;color:#ff0033;padding:10px 12px;text-align:left;border-bottom:1px solid #1e1e1e;font-size:11px;letter-spacing:.1em;text-transform:uppercase;">'+c+'</th>';});
+  html+='</tr></thead><tbody>';
+  for(let i=1;i<rows.length;i++){html+='<tr>';rows[i].forEach(function(c){html+='<td style="padding:10px 12px;color:#c0c0c0;border-bottom:1px solid #141414;">'+c+'</td>';});html+='</tr>';}
+  html+='</tbody></table></div>';
   return html;
-  }
+}
 
+function renderContent(text){
   const container=document.createElement("div");
   const parts=text.split(/```/);
   for(let i=0;i<parts.length;i++){
@@ -398,57 +301,25 @@ function renderTable(rows){
     } else {
       const block=parts[i];
       const lines=block.split("\n");
-      let lang="code";
-      let code=block;
-      if(lines[0] && lines[0].trim() && !lines[0].includes(" ") && lines[0].length < 20){
-        lang=lines[0].trim().toLowerCase();
-        code=lines.slice(1).join("\n");
-      }
+      let lang="code",code=block;
+      if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){lang=lines[0].trim().toLowerCase();code=lines.slice(1).join("\n");}
       code=code.replace(/^\n+|\n+$/g,"");
-      const cb=document.createElement("div");
-      cb.className="codeblock";
-      const head=document.createElement("div");
-      head.className="codehead";
-      const langEl=document.createElement("span");
-      langEl.className="codelang";
-      langEl.textContent=lang;
-      const btns=document.createElement("div");
-      btns.className="codebtns";
-      const copyBtn=document.createElement("button");
-      copyBtn.className="codebtn";
+      const cb=document.createElement("div");cb.className="codeblock";
+      const head=document.createElement("div");head.className="codehead";
+      const langEl=document.createElement("span");langEl.className="codelang";langEl.textContent=lang;
+      const btns=document.createElement("div");btns.className="codebtns";
+      const copyBtn=document.createElement("button");copyBtn.className="codebtn";
       copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';
-      copyBtn.onclick=function(){
-        const done=function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';copyBtn.classList.add("done");setTimeout(function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';copyBtn.classList.remove("done");},1500);};
-        if(navigator.clipboard)navigator.clipboard.writeText(code).then(done).catch(done);
-        else{const ta=document.createElement("textarea");ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}
-      };
-      btns.appendChild(copyBtn);
-      head.appendChild(langEl);head.appendChild(btns);
-      const pre=document.createElement("pre");
-      const codeEl=document.createElement("code");
-      codeEl.textContent=code;
-      pre.appendChild(codeEl);
+      copyBtn.onclick=function(){const done=function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';copyBtn.classList.add("done");setTimeout(function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';copyBtn.classList.remove("done");},1500);};if(navigator.clipboard)navigator.clipboard.writeText(code).then(done).catch(done);else{const ta=document.createElement("textarea");ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}};
+      btns.appendChild(copyBtn);head.appendChild(langEl);head.appendChild(btns);
+      const pre=document.createElement("pre");const codeEl=document.createElement("code");codeEl.textContent=code;pre.appendChild(codeEl);
       cb.appendChild(head);cb.appendChild(pre);
       if(lang==="html"||lang==="css"||lang==="javascript"||lang==="js"){
-        const previewBtn=document.createElement("button");
-        previewBtn.className="codebtn";
-        previewBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>PREVIEW';
-        let previewOpen=false,previewEl=null;
-        previewBtn.onclick=function(){
-          if(previewOpen){if(previewEl)previewEl.remove();previewOpen=false;previewBtn.classList.remove("done");return;}
-          previewEl=document.createElement("div");
-          previewEl.className="preview";
-          const ph=document.createElement("div");
-          ph.className="previewhead";
-          ph.innerHTML='<span>PREVIEW</span>';
-          const iframe=document.createElement("iframe");
-          iframe.sandbox="allow-scripts";
-          iframe.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Ini contoh teks untuk lihat efek CSS-nya.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';
-          previewEl.appendChild(ph);previewEl.appendChild(iframe);
-          cb.appendChild(previewEl);
-          previewOpen=true;previewBtn.classList.add("done");
-        };
-        btns.appendChild(previewBtn);
+        const pv=document.createElement("button");pv.className="codebtn";
+        pv.innerHTML='<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>PREVIEW';
+        let po=false,pe=null;
+        pv.onclick=function(){if(po){if(pe)pe.remove();po=false;pv.classList.remove("done");return;}pe=document.createElement("div");pe.className="preview";const ph=document.createElement("div");ph.className="previewhead";ph.innerHTML='<span>PREVIEW</span>';const ifr=document.createElement("iframe");ifr.sandbox="allow-scripts";ifr.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Ini contoh teks untuk lihat efek CSS-nya.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';pe.appendChild(ph);pe.appendChild(ifr);cb.appendChild(pe);po=true;pv.classList.add("done");};
+        btns.appendChild(pv);
       }
       container.appendChild(cb);
     }
@@ -481,109 +352,59 @@ async function reply(p){
 
 function attachActions(toolbar,replyText,userMsg){
   addAction(toolbar,"SALIN",function(){const b=this;const done=function(){b.textContent="TERSALIN";b.classList.add("done");setTimeout(function(){b.textContent="SALIN";b.classList.remove("done");},1500);};if(navigator.clipboard)navigator.clipboard.writeText(replyText).then(done).catch(done);else{const ta=document.createElement("textarea");ta.value=replyText;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}});
-  addAction(toolbar,"REGENERATE",async function(){if(busy)return;busy=true;hist.pop();toolbar.parentElement.remove();const l2=ld();let r2="";try{r2=await reply(userMsg);}catch(e){r2="Error: "+e.message;}l2.remove();if(!r2){busy=false;return;}const node2=addAI();const c2=renderContent(r2);await ty(node2.bubble,c2,50);attachActions(node2.toolbar,r2,userMsg);busy=false;});
+  addAction(toolbar,"REGENERATE",async function(){if(busy)return;busy=true;hist.pop();toolbar.parentElement.remove();const l2=ld();let r2="";try{r2=await reply(userMsg);}catch(e){r2="Error: "+e.message;}l2.remove();if(!r2){busy=false;return;}const n2=addAI();const c2=renderContent(r2);await ty(n2.bubble,c2,50);attachActions(n2.toolbar,r2,userMsg);busy=false;});
 }
 
-function autoTitle(text){
-  return text.length>30 ? text.substring(0,30)+"..." : text;
-}
-
-function saveCurrentChat(){
-  if(!currentChatId)return;
-  const c=chats.find(x=>x.id===currentChatId);
-  if(c){c.messages=hist;saveChats(chats);renderSidebar();}
-}
+function autoTitle(text){return text.length>30?text.substring(0,30)+"...":text;}
+function saveCurrentChat(){if(!currentChatId)return;const c=chats.find(x=>x.id===currentChatId);if(c){c.messages=hist;saveChats(chats);renderSidebar();}}
 
 async function sd(){
   if(busy)return;
   const t=inp.value.trim();if(!t)return;
-
-  if(!currentChatId){
-    currentChatId="chat-"+Date.now();
-    chats.unshift({id:currentChatId,title:autoTitle(t),messages:[]});
-    saveChats(chats);
-    renderSidebar();
-  }
-
-  busy=true;btn.disabled=true;
-  hideHero();
-  addUser(t);inp.value="";ag();bt();
+  if(!currentChatId){currentChatId="chat-"+Date.now();chats.unshift({id:currentChatId,title:autoTitle(t),messages:[]});saveChats(chats);renderSidebar();}
+  busy=true;btn.disabled=true;hideHero();addUser(t);inp.value="";ag();bt();
   const l=ld();
   let r="";
   try{r=await reply(t);}catch(e){r="Error: "+e.message;}
   l.remove();
-  if(r){
-    const node=addAI();
-    const content=renderContent(r);
-    await ty(node.bubble,content,50);
-    attachActions(node.toolbar,r,t);
-    saveCurrentChat();
-  }
+  if(r){const n=addAI();const c=renderContent(r);await ty(n.bubble,c,50);attachActions(n.toolbar,r,t);saveCurrentChat();}
   busy=false;btn.disabled=false;inp.focus();
 }
 
 function renderSidebar(){
   if(!chats.length){sbList.innerHTML='<div class="sb-empty">Belum ada chat</div>';return;}
   sbList.innerHTML="";
-  chats.forEach(c=>{
-    const item=document.createElement("div");
-    item.className="sb-item"+(c.id===currentChatId?" active":"");
-    const title=document.createElement("span");
-    title.className="title";
-    title.textContent=c.title;
-    title.onclick=()=>loadChat(c.id);
-    const del=document.createElement("button");
-    del.className="del";
-    del.innerHTML='<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
-    del.onclick=(e)=>{e.stopPropagation();deleteChat(c.id);};
-    item.appendChild(title);item.appendChild(del);
-    sbList.appendChild(item);
+  chats.forEach(function(c){
+    const item=document.createElement("div");item.className="sb-item"+(c.id===currentChatId?" active":"");
+    const title=document.createElement("span");title.className="title";title.textContent=c.title;title.onclick=function(){loadChat(c.id);};
+    const del=document.createElement("button");del.className="del";del.innerHTML='<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+    del.onclick=function(e){e.stopPropagation();deleteChat(c.id);};
+    item.appendChild(title);item.appendChild(del);sbList.appendChild(item);
   });
 }
 
 function loadChat(id){
-  const c=chats.find(x=>x.id===id);
-  if(!c)return;
-  currentChatId=id;
-  hist=c.messages||[];
-  wrap.innerHTML="";
-  hideHero();
-  hist.forEach(m=>{
+  const c=chats.find(x=>x.id===id);if(!c)return;
+  currentChatId=id;hist=c.messages||[];wrap.innerHTML="";hideHero();
+  hist.forEach(function(m){
     if(m.role==="user"){addUser(m.content);}
-    else{
-      const node=addAI();
-      const content=renderContent(m.content);
-      node.bubble.appendChild(content);
-    }
+    else{const n=addAI();const cnt=renderContent(m.content);n.bubble.appendChild(cnt);}
   });
-  bt();
-  closeSb();
+  bt();closeSb();
 }
 
-function deleteChat(id){
-  chats=chats.filter(x=>x.id!==id);
-  if(currentChatId===id){newChat();}
-  saveChats(chats);
-  renderSidebar();
-}
-
+function deleteChat(id){chats=chats.filter(x=>x.id!==id);if(currentChatId===id){newChat();}saveChats(chats);renderSidebar();}
 function openSb(){sidebar.classList.add("open");overlay.classList.add("show");}
 function closeSb(){sidebar.classList.remove("open");overlay.classList.remove("show");}
-document.getElementById("menuBtn").onclick=openSb;
-document.getElementById("sbClose").onclick=closeSb;
-overlay.onclick=closeSb;
 
 function newChat(){
   if(busy)return;
-  currentChatId=null;
-  hist=[];
-  wrap.innerHTML="";
-  showHero();
-  wrap.appendChild(hero);
-  closeSb();
-  renderSidebar();
-  inp.focus();
+  currentChatId=null;hist=[];wrap.innerHTML="";showHero();wrap.appendChild(hero);closeSb();renderSidebar();inp.focus();
 }
+
+document.getElementById("menuBtn").onclick=openSb;
+document.getElementById("sbClose").onclick=closeSb;
+overlay.onclick=closeSb;
 document.getElementById("newBtn").onclick=newChat;
 document.getElementById("sbNew").onclick=newChat;
 
@@ -593,9 +414,7 @@ document.getElementById("exportBtn").onclick=function(){
   for(let i=0;i<hist.length;i++){const h=hist[i];txt+=(h.role==="user"?"KAMU":"KH AI")+":\n"+h.content+"\n\n";}
   const blob=new Blob([txt],{type:"text/plain"});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download="khai-chat-"+Date.now()+".txt";a.click();
-  URL.revokeObjectURL(url);
+  const a=document.createElement("a");a.href=url;a.download="khai-chat-"+Date.now()+".txt";a.click();URL.revokeObjectURL(url);
 };
 
 inp.addEventListener("input",ag);
