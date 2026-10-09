@@ -230,7 +230,7 @@ code{font-family:'Courier New',monospace}
 </div>
 
 <script>
-const WORKER_URL = "https://kh-backend-liard.vercel.app/api/chat.html"
+const WORKER_URL = "https://kh-backend-liard.vercel.app/api/chat";
   function loadChats(){try{return JSON.parse(localStorage.getItem("khai_chats")||"[]");}catch(e){return[];}}
 function saveChats(c){localStorage.setItem("khai_chats",JSON.stringify(c));}
 let chats=loadChats(),currentChatId=null,hist=[],busy=false;
