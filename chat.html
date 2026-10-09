@@ -266,7 +266,125 @@ function ag(){inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight
 function hideHero(){if(hero)hero.classList.add("hidden");}
 function showHero(){if(hero)hero.classList.remove("hidden");}
 
-function renderContent(text){
+function parseMarkdown(text){
+  // Escape HTML dulu biar aman
+  let html = text
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+  // Simpen inline code dulu biar gak ke-parse
+  const inlineCodes = [];
+  html = html.replace(/`([^`\n]+?)`/g, function(m, code){
+    inlineCodes.push(code);
+    return "\u0000IC" + (inlineCodes.length - 1) + "\u0000";
+  });
+
+  // Bold **teks** dan __teks__
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__(.+?)__/g, "<strong>$1</strong>");
+
+  // Italic *teks* dan _teks_
+  html = html.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>");
+  html = html.replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>");
+
+  // Strikethrough ~~teks~~
+  html = html.replace(/~~(.+?)~~/g, '<span style="text-decoration:line-through;opacity:.7;">$1</span>');
+
+  // Link [teks](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#ff0033;text-decoration:underline;">$1</a>');
+
+  // Gambar ![alt](url)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;">');
+
+  // Heading
+  html = html.replace(/^### (.+)$/gm, '<div style="font-size:15px;font-weight:700;color:#fff;margin:12px 0 6px;letter-spacing:.05em;">$1</div>');
+  html = html.replace(/^## (.+)$/gm, '<div style="font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;letter-spacing:.05em;">$1</div>');
+  html = html.replace(/^# (.+)$/gm, '<div style="font-size:20px;font-weight:800;color:#fff;margin:16px 0 10px;letter-spacing:.08em;">$1</div>');
+
+  // Horizontal rule
+  html = html.replace(/^---+$/gm, '<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
+  html = html.replace(/^\*\*\*+$/gm, '<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
+
+  // Quote > teks
+  html = html.replace(/^&gt; (.+)$/gm, '<div style="border-left:3px solid #ff0033;padding:6px 12px;margin:8px 0;color:#b0b0b0;font-style:italic;background:rgba(255,0,51,.04);border-radius:0 6px 6px 0;">$1</div>');
+
+  // Bullet list - item (dengan indentasi)
+  html = html.replace(/^(\s*)[-\*\+] (.+)$/gm, function(m, indent, content){
+    const pad = 16 + (indent.length * 8);
+    return '<div style="padding-left:'+pad+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(pad-12)+'px;color:#ff0033;">•</span>'+content+'</div>';
+  });
+
+  // Numbered list
+  html = html.replace(/^(\s*)(\d+)\. (.+)$/gm, function(m, indent, num, content){
+    const pad = 16 + (indent.length * 8);
+    return '<div style="padding-left:'+pad+'px;position:relative;margin:3px 0;color:#d8d8d8;"><span style="position:absolute;left:'+(pad-14)+'px;color:#ff0033;font-weight:700;">'+num+'.</span>'+content+'</div>';
+  });
+
+  // Tabel markdown sederhana
+  const lines = html.split("\n");
+  let inTable = false;
+  let tableRows = [];
+  const newLines = [];
+
+  for(let i = 0; i < lines.length; i++){
+    const line = lines[i].trim();
+    if(line.startsWith("|") && line.endsWith("|")){
+      // skip separator row |---|---|
+      if(/^\|[\s\-:]+\|$/.test(line)) continue;
+      const cells = line.split("|").slice(1, -1).map(c => c.trim());
+      tableRows.push(cells);
+      inTable = true;
+    } else {
+      if(inTable && tableRows.length){
+        newLines.push(renderTable(tableRows));
+        tableRows = [];
+        inTable = false;
+      }
+      newLines.push(lines[i]);
+    }
+  }
+  if(inTable && tableRows.length){
+    newLines.push(renderTable(tableRows));
+  }
+  html = newLines.join("\n");
+
+  // Line break
+  html = html.replace(/\n/g, "<br>");
+
+  // Balikin inline code
+  html = html.replace(/\u0000IC(\d+)\u0000/g, function(m, i){
+    const code = inlineCodes[parseInt(i)];
+    return '<code style="background:#151515;padding:2px 6px;border-radius:4px;color:#ff5577;font-size:12.5px;border:1px solid #222;">'+code+'</code>';
+  });
+
+  return html;
+}
+
+function renderTable(rows){
+  if(!rows.length) return "";
+  let html = '<div style="overflow-x:auto;margin:12px 0;"><table style="width:100%;border-collapse:collapse;background:#080808;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden;font-size:12.5px;">';
+  
+  // Header
+  html += '<thead><tr>';
+  rows[0].forEach(cell => {
+    html += '<th style="background:#0d0d0d;color:#ff0033;padding:10px 12px;text-align:left;border-bottom:1px solid #1e1e1e;font-size:11px;letter-spacing:.1em;text-transform:uppercase;">'+cell+'</th>';
+  });
+  html += '</tr></thead><tbody>';
+  
+  // Body
+  for(let i = 1; i < rows.length; i++){
+    html += '<tr>';
+    rows[i].forEach(cell => {
+      html += '<td style="padding:10px 12px;color:#c0c0c0;border-bottom:1px solid #141414;">'+cell+'</td>';
+    });
+    html += '</tr>';
+  }
+  
+  html += '</tbody></table></div>';
+  return html;
+  }
+
   const container=document.createElement("div");
   const parts=text.split(/```/);
   for(let i=0;i<parts.length;i++){
@@ -274,7 +392,7 @@ function renderContent(text){
       if(parts[i].trim()){
         const p=document.createElement("div");
         p.style.whiteSpace="pre-wrap";
-        p.textContent=parts[i];
+        p.innerHTML=parseMarkdown(parts[i]);
         container.appendChild(p);
       }
     } else {
