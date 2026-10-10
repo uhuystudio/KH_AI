@@ -113,6 +113,8 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .codebtn.done{color:#ff3355;border-color:#ff0033;background:rgba(255,0,51,.12)}
 .codebtn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;margin-right:4px}
 pre{padding:14px;overflow-x:auto;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.6;color:#d8d8d8}
+  .codebody{position:relative}
+.codebody iframe{width:100%;height:320px;border:0;background:#fff;display:block}
 pre::-webkit-scrollbar{height:6px}
 pre::-webkit-scrollbar-thumb{background:#222;border-radius:6px}
 code{font-family:'Courier New',monospace}
@@ -343,24 +345,98 @@ function renderContent(text){
       const block=parts[i];
       const lines=block.split("\n");
       let lang="code",code=block;
-      if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){lang=lines[0].trim().toLowerCase();code=lines.slice(1).join("\n");}
+      if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){
+        lang=lines[0].trim().toLowerCase();
+        code=lines.slice(1).join("\n");
+      }
       code=code.replace(/^\n+|\n+$/g,"");
-      const cb=document.createElement("div");cb.className="codeblock";
-      const head=document.createElement("div");head.className="codehead";
-      const langEl=document.createElement("span");langEl.className="codelang";langEl.textContent=lang;
-      const btns=document.createElement("div");btns.className="codebtns";
-      const copyBtn=document.createElement("button");copyBtn.className="codebtn";
+
+      const cb=document.createElement("div");
+      cb.className="codeblock";
+
+      const head=document.createElement("div");
+      head.className="codehead";
+
+      const langEl=document.createElement("span");
+      langEl.className="codelang";
+      langEl.textContent=lang;
+
+      const btns=document.createElement("div");
+      btns.className="codebtns";
+
+      // Tombol COPY
+      const copyBtn=document.createElement("button");
+      copyBtn.className="codebtn";
       copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';
-      copyBtn.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(code);copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';copyBtn.classList.add("done");setTimeout(function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';copyBtn.classList.remove("done");},1500);};
-      btns.appendChild(copyBtn);head.appendChild(langEl);head.appendChild(btns);
-      const pre=document.createElement("pre");const codeEl=document.createElement("code");codeEl.textContent=code;pre.appendChild(codeEl);
-      cb.appendChild(head);cb.appendChild(pre);
+      copyBtn.onclick=function(){
+        if(navigator.clipboard)navigator.clipboard.writeText(code);
+        copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';
+        copyBtn.classList.add("done");
+        setTimeout(function(){
+          copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';
+          copyBtn.classList.remove("done");
+        },1500);
+      };
+      btns.appendChild(copyBtn);
+
+      head.appendChild(langEl);
+      head.appendChild(btns);
+
+      // Isi code block (bisa di-toggle antara code & preview)
+      const body=document.createElement("div");
+      body.className="codebody";
+
+      const pre=document.createElement("pre");
+      const codeEl=document.createElement("code");
+      codeEl.textContent=code;
+      pre.appendChild(codeEl);
+      body.appendChild(pre);
+
+      cb.appendChild(head);
+      cb.appendChild(body);
+
+      if(lang==="html"||lang==="css"||lang==="javascript"||lang==="js"){
+        let previewOpen=false;
+        let previewIframe=null;
+
+        // Tombol CODE (buat balik ke code)
+        const codeBtn=document.createElement("button");
+        codeBtn.className="codebtn";
+        codeBtn.style.display="none";
+        codeBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>CODE';
+        codeBtn.onclick=function(){
+          if(previewIframe){previewIframe.remove();previewIframe=null;}
+          pre.style.display="block";
+          previewOpen=false;
+          codeBtn.style.display="none";
+          pv.style.display="inline-flex";
+        };
+
+        // Tombol PREVIEW (buat ganti ke preview)
+        const pv=document.createElement("button");
+        pv.className="codebtn";
+        pv.innerHTML='<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>PREVIEW';
+        pv.onclick=function(){
+          if(previewOpen)return;
+          pre.style.display="none";
+          previewIframe=document.createElement("iframe");
+          previewIframe.sandbox="allow-scripts";
+          previewIframe.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Ini contoh teks untuk lihat efek CSS-nya.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';
+          body.appendChild(previewIframe);
+          previewOpen=true;
+          pv.style.display="none";
+          codeBtn.style.display="inline-flex";
+        };
+
+        btns.appendChild(codeBtn);
+        btns.appendChild(pv);
+      }
+
       container.appendChild(cb);
     }
   }
   return container;
-}
-
+  }
 /* ===== DOM ===== */
 const chat=document.getElementById("chat"),wrap=document.getElementById("wrap"),inp=document.getElementById("in"),btn=document.getElementById("send"),hero=document.getElementById("hero");
 const sidebar=document.getElementById("sidebar"),overlay=document.getElementById("overlay"),sbList=document.getElementById("sbList");
@@ -382,16 +458,16 @@ async function reply(p){
     const res=await fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+idToken},body:JSON.stringify({messages:msgs})});
     if(res.status===429){hist.pop();document.getElementById("upgradeModal").classList.add("show");return null;}
     if(res.status===401){hist.pop();await signOut(auth);window.location.href="login.html";return null;}
-    if(!res.ok){const e=await res.text();hist.pop();return "API Error "+res.status+":\n"+e;}
+    if(!res.ok){const e=await res.text();hist.pop();return {text:"API Error "+res.status+":\n"+e, finish_reason:"stop"};}
     const d=await res.json();
     if(d.usage){usage.used=d.usage.used;usage.limit=d.usage.limit;usage.premium=d.usage.premium;updateUsage();}
     let r="";
     if(d.choices&&d.choices[0]&&d.choices[0].message)r=d.choices[0].message.content;
     else r=JSON.stringify(d);
     hist.push({role:"assistant",content:r});
-    return r;
-  }catch(e){hist.pop();return "Koneksi gagal:\n"+e.message;}
-}
+    return { text: r, finish_reason: d.finish_reason || "stop" };
+  }catch(e){hist.pop();return {text:"Koneksi gagal:\n"+e.message, finish_reason:"stop"};}
+    }
 
 /* ===== ACTIONS ===== */
 function attachActions(tb,replyText,userMsg){
@@ -408,12 +484,19 @@ async function sd(){
   const t=inp.value.trim();if(!t)return;
   if(!currentChatId){currentChatId="chat-"+Date.now();chats.unshift({id:currentChatId,title:autoTitle(t),messages:[]});saveChats();renderSidebar();}
   busy=true;btn.disabled=true;hideHero();addUser(t);inp.value="";ag();bt();
-  const l=ld();let r="";
-  try{r=await reply(t);}catch(e){r="Error: "+e.message;}
+  const l=ld();
+  let r=null;
+  try{r=await reply(t);}catch(e){r={text:"Error: "+e.message,finish_reason:"stop"};}
   l.remove();
-  if(r){const n=addAI();const c=renderContent(r);await ty(n.bubble,c,50);attachActions(n.toolbar,r,t);saveCurrentChat();}
+  if(r&&r.text){
+    const n=addAI();
+    const c=renderContent(r.text);
+    await ty(n.bubble,c,50);
+    attachActions(n.toolbar,r.text,t,r.finish_reason);
+    saveCurrentChat();
+  }
   busy=false;btn.disabled=false;inp.focus();
-}
+    }
 
 /* ===== SIDEBAR ===== */
 function renderSidebar(){
