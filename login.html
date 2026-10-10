@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>KH AI - Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;color:#e0e0e0;font-family:monospace;overflow:hidden}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* INTRO */
+#intro{position:fixed;inset:0;z-index:1000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .8s ease,transform .8s ease}
+#intro.hide{opacity:0;transform:scale(1.08);pointer-events:none}
+#intro .mark{font-size:clamp(36px,10vw,68px);font-weight:800;letter-spacing:.22em;color:#fff;text-shadow:0 0 10px rgba(255,0,51,.9),0 0 28px rgba(255,0,51,.55),0 0 70px rgba(255,0,51,.3);animation:markIn 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes markIn{0%{opacity:0;transform:scale(.82);filter:blur(14px);letter-spacing:.6em}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1);letter-spacing:.22em}}
+#intro .sub{font-size:11px;letter-spacing:.5em;color:#ff0033;text-transform:uppercase;opacity:0;animation:subIn .9s ease .55s both}
+@keyframes subIn{from{opacity:0;transform:translateY(8px)}to{opacity:.85;transform:translateY(0)}}
+#intro .bar{width:min(240px,60vw);height:2px;background:#1a1a1a;overflow:hidden;border-radius:2px;opacity:0;animation:subIn .6s ease .8s both}
+#intro .bar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,transparent,#ff0033,transparent);animation:sweep 1.1s linear infinite}
+@keyframes sweep{from{transform:translateX(-120%)}to{transform:translateX(320%)}}
+
+/* LOGIN SCREEN */
+.wrap{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto;opacity:0;transition:opacity .7s ease}
+.wrap.show{opacity:1}
+.logo{width:130px;height:130px;margin-bottom:20px;animation:logoIn 1.2s cubic-bezier(.2,.8,.2,1) both;filter:drop-shadow(0 0 24px rgba(255,0,51,.5))}
+@keyframes logoIn{0%{opacity:0;transform:scale(.7) rotate(-8deg);filter:blur(12px)}100%{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}}
+.title{font-size:clamp(32px,9vw,48px);font-weight:800;letter-spacing:.15em;color:#fff;margin-bottom:8px;text-shadow:0 0 24px rgba(255,0,51,.6),0 0 60px rgba(255,0,51,.3)}
+.title span{color:#ff0033}
+.subtitle{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#ff0033;opacity:.85;margin-bottom:44px}
+.form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+.btn{width:100%;padding:15px 20px;background:#0a0a0a;border:1px solid #222;border-radius:12px;color:#e0e0e0;font-family:monospace;font-size:13px;letter-spacing:.1em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:.22s}
+.btn:hover{border-color:#ff0033;color:#fff}
+.btn.primary{background:#ff0033;color:#000;border-color:#ff0033;font-weight:700;box-shadow:0 0 24px rgba(255,0,51,.4)}
+.btn.primary:hover{box-shadow:0 0 36px rgba(255,0,51,.8);transform:translateY(-2px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex-shrink:0}
+.divider{display:flex;align-items:center;gap:12px;color:#4a4a4a;font-size:11px;letter-spacing:.2em;margin:6px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:#1a1a1a}
+.input{width:100%;padding:15px 18px;background:#0a0a0a;border:1px solid #222;border-radius:12px;color:#e0e0e0;font-family:monospace;font-size:13px;outline:none;transition:.22s}
+.input:focus{border-color:rgba(255,0,51,.55);box-shadow:0 0 0 3px rgba(255,0,51,.08)}
+.input::placeholder{color:#4a4a4a}
+.msg{margin-top:16px;font-size:11px;color:#ff0033;min-height:16px;text-align:center;max-width:340px;letter-spacing:.05em}
+.toggle{margin-top:24px;font-size:11px;color:#808080;cursor:pointer;letter-spacing:.1em;text-align:center;text-decoration:underline;transition:.2s}
+.toggle:hover{color:#ff0033}
+.footer{margin-top:32px;font-size:10px;color:#4a4a4a;letter-spacing:.2em;text-align:center;line-height:1.8}
+.footer a{color:#606060;text-decoration:none}
+.footer a:hover{color:#ff0033}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .8s linear infinite;display:none}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="mark">KH AI</div>
+  <div class="sub">Initializing Core</div>
+  <div class="bar"><i></i></div>
+</div>
+
+<!-- LOGIN -->
+<div class="wrap" id="wrap">
+
+  <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="neonL"><feGaussianBlur stdDeviation="1.6" result="b1"/><feGaussianBlur stdDeviation="3" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="bglowL"><feGaussianBlur stdDeviation="1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g filter="url(#neonL)">
+      <polygon points="50,8 86.4,29 86.4,71 50,92 13.6,71 13.6,29" fill="none" stroke="#ff0033" stroke-width="1.6" stroke-linejoin="round"/>
+    </g>
+    <g filter="url(#neonL)">
+      <line x1="50" y1="50" x2="50" y2="12" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+      <line x1="50" y1="50" x2="83" y2="31" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+      <line x1="50" y1="50" x2="83" y2="69" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+      <line x1="50" y1="50" x2="50" y2="88" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+      <line x1="50" y1="50" x2="17" y2="69" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+      <line x1="50" y1="50" x2="17" y2="31" stroke="#ff0033" stroke-width="0.9" opacity="0.55"/>
+    </g>
+    <g transform="rotate(0 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <g transform="rotate(60 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" begin=".2s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <g transform="rotate(120 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" begin=".4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <g transform="rotate(180 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" begin=".6s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <g transform="rotate(240 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" begin=".8s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <g transform="rotate(300 50 50)"><g><animateTransform attributeName="transform" type="translate" values="0 -18; 0 -32; 0 -18" dur="2.4s" repeatCount="indefinite" begin="1s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" keyTimes="0;.5;1"/><circle cx="50" cy="50" r="2.8" fill="#fff" filter="url(#bglowL)"/></g></g>
+    <circle cx="50" cy="50" r="2.5" fill="#ff0033" filter="url(#neonL)"/>
+  </svg>
+
+  <div class="title">KH <span>AI</span></div>
+  <div class="subtitle">Masuk untuk mulai</div>
+
+  <div class="form">
+    <button class="btn primary" id="googleBtn">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#000"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#000"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#000"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#000"/>
+      </svg>
+      Masuk dengan Google
+    </button>
+
+    <div class="divider">ATAU</div>
+
+    <input type="email" class="input" id="loginEmail" placeholder="email@kamu.com" autocomplete="email">
+    <input type="password" class="input" id="loginPass" placeholder="password" autocomplete="current-password">
+    <button class="btn" id="emailBtn">
+      <span class="spinner" id="emailSpinner"></span>
+      <span id="emailBtnText">Masuk dengan Email</span>
+    </button>
+
+    <div class="toggle" id="toggleMode">Belum punya akun? Daftar</div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="footer">
+    KH AI &copy; 2026<br>
+    <a href="https://uhuystudio.github.io/KH_AI/">Kembali ke Beranda</a>
+  </div>
+
+</div>
+
+<!-- SCRIPT DITARUH DI BAGIAN 2 -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ============================================================
+   CONFIG FIREBASE KAMU
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAPx6XY8CRDrS8sxh00uNjWsymTu8jD95M",
+  authDomain: "khai-b6e18.firebaseapp.com",
+  projectId: "khai-b6e18",
+  storageBucket: "khai-b6e18.firebasestorage.app",
+  messagingSenderId: "903942429337",
+  appId: "1:903942429337:web:9a21b3b38c7bc917be3608"
+};
+/* ============================================================ */
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+let isRegister = false;
+const msg = document.getElementById("msg");
+const emailBtn = document.getElementById("emailBtn");
+const emailBtnText = document.getElementById("emailBtnText");
+const spinner = document.getElementById("emailSpinner");
+
+/* ===== INTRO ANIMATION ===== */
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("intro").classList.add("hide");
+    document.getElementById("wrap").classList.add("show");
+  }, 2400);
+});
+
+/* ===== BACKGROUND: HUJAN + PETIR ===== */
+const cv=document.getElementById("bg"),cx=cv.getContext("2d");
+let W,H,dr=[],bo=[],lB=0,nB=4000;
+function rz(){const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+"px";cv.style.height=H+"px";cx.setTransform(d,0,0,d,0,0);const n=Math.round(Math.min(Math.max(W/18,35),90));dr=[];for(let i=0;i<n;i++)dr.push(mk(true));}
+function mk(s){return{x:Math.random()*W,y:s?Math.random()*H:-Math.random()*H*.4,len:20+Math.random()*120,sp:1.5+Math.random()*5,al:.04+Math.random()*.24,w:Math.random()<.1?2:1,c:Math.random()<.45?"r":"g"};}
+function mb(){const sx=Math.random()*W,p=[{x:sx,y:-30}];let a=sx,b=-30;while(b<H+40){b+=22+Math.random()*48;a+=(Math.random()-.5)*72;p.push({x:a,y:b});}bo.push({p:p,l:1,d:.05+Math.random()*.05,w:Math.random()<.3?2:1.1,c:Math.random()<.6?"r":"g"});}
+function drw(){cx.lineCap="round";for(let i=0;i<dr.length;i++){const d=dr[i],g=cx.createLinearGradient(d.x,d.y,d.x,d.y+d.len);if(d.c==="r"){g.addColorStop(0,"rgba(255,0,51,0)");g.addColorStop(.45,"rgba(255,0,51,"+d.al*.7+")");g.addColorStop(1,"rgba(255,80,110,"+d.al+")");}else{g.addColorStop(0,"rgba(128,128,128,0)");g.addColorStop(.45,"rgba(128,128,128,"+d.al*.7+")");g.addColorStop(1,"rgba(180,180,180,"+d.al+")");}cx.strokeStyle=g;cx.lineWidth=d.w;cx.beginPath();cx.moveTo(d.x,d.y);cx.lineTo(d.x,d.y+d.len);cx.stroke();d.y+=d.sp;if(d.y>H+40){const n=mk(false);d.x=n.x;d.y=n.y;d.len=n.len;d.sp=n.sp;d.al=n.al;d.w=n.w;d.c=n.c;}}
+for(let i=bo.length-1;i>=0;i--){const b=bo[i],a=Math.max(b.l,0);cx.save();cx.globalAlpha=a;if(b.c==="r"){cx.shadowBlur=20;cx.shadowColor="rgba(255,0,51,.9)";cx.strokeStyle="rgba(255,60,90,"+(.85*a)+")";}else{cx.shadowBlur=14;cx.shadowColor="rgba(180,180,180,.8)";cx.strokeStyle="rgba(200,200,200,"+(.7*a)+")";}cx.lineWidth=b.w;cx.lineJoin="miter";cx.beginPath();cx.moveTo(b.p[0].x,b.p[0].y);for(let p=1;p<b.p.length;p++)cx.lineTo(b.p[p].x,b.p[p].y);cx.stroke();cx.shadowBlur=0;cx.strokeStyle="rgba(255,255,255,"+(.5*a)+")";cx.lineWidth=b.w*.35;cx.stroke();cx.restore();b.l-=b.d;if(b.l<=0)bo.splice(i,1);}}
+function lp(ts){cx.clearRect(0,0,W,H);cx.fillStyle="#000";cx.fillRect(0,0,W,H);drw();if(ts-lB>nB){mb();lB=ts;nB=4000+Math.random()*8000;if(Math.random()<.12)setTimeout(mb,120);}requestAnimationFrame(lp);}
+rz();addEventListener("resize",rz);requestAnimationFrame(lp);
+
+/* ===== TOGGLE LOGIN/REGISTER ===== */
+document.getElementById("toggleMode").onclick = () => {
+  isRegister = !isRegister;
+  document.getElementById("toggleMode").textContent = isRegister ? "Udah punya akun? Masuk" : "Belum punya akun? Daftar";
+  emailBtnText.textContent = isRegister ? "Daftar dengan Email" : "Masuk dengan Email";
+  msg.textContent = "";
+};
+
+/* ===== GOOGLE LOGIN ===== */
+document.getElementById("googleBtn").onclick = async () => {
+  try {
+    msg.textContent = "Memproses...";
+    msg.style.color = "#909090";
+    await signInWithPopup(auth, googleProvider);
+  } catch (e) {
+    msg.textContent = "Gagal: " + (e.code || e.message);
+    msg.style.color = "#ff0033";
+  }
+};
+
+/* ===== EMAIL LOGIN/REGISTER ===== */
+emailBtn.onclick = async () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+
+  if (!email || email.indexOf("@") === -1) {
+    msg.textContent = "Email tidak valid.";
+    msg.style.color = "#ff0033";
+    return;
+  }
+  if (pass.length < 6) {
+    msg.textContent = "Password minimal 6 karakter.";
+    msg.style.color = "#ff0033";
+    return;
+  }
+
+  emailBtn.disabled = true;
+  spinner.classList.add("show");
+  emailBtnText.textContent = "Memproses...";
+  msg.textContent = "";
+
+  try {
+    if (isRegister) {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+  } catch (e) {
+    let err = e.code || e.message;
+    if (err.includes("email-already-in-use")) err = "Email sudah terdaftar. Coba masuk.";
+    else if (err.includes("invalid-credential") || err.includes("wrong-password")) err = "Email atau password salah.";
+    else if (err.includes("user-not-found")) err = "Akun tidak ditemukan. Daftar dulu.";
+    else if (err.includes("weak-password")) err = "Password terlalu lemah.";
+    else if (err.includes("invalid-email")) err = "Format email salah.";
+    msg.textContent = err;
+    msg.style.color = "#ff0033";
+  }
+
+  emailBtn.disabled = false;
+  spinner.classList.remove("show");
+  emailBtnText.textContent = isRegister ? "Daftar dengan Email" : "Masuk dengan Email";
+};
+
+/* ===== AUTO REDIRECT KALAU UDAH LOGIN ===== */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    msg.textContent = "Berhasil! Mengalihkan...";
+    msg.style.color = "#ff0033";
+    setTimeout(() => {
+      window.location.href = "chat.html";
+    }, 800);
+  }
+});
+
+/* ===== ENTER KEY ===== */
+document.getElementById("loginPass").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") emailBtn.click();
+});
+</script>
+</body>
+</html>
