@@ -44,7 +44,6 @@ button:disabled{background:#1e1e1e;color:#666;box-shadow:none;cursor:not-allowed
   <h1>KH AI ADMIN</h1>
   <div class="sub">Control Panel</div>
 
-  <!-- STATISTIK -->
   <div class="card">
     <h2>Statistik</h2>
     <div class="stats">
@@ -62,15 +61,14 @@ button:disabled{background:#1e1e1e;color:#666;box-shadow:none;cursor:not-allowed
       </div>
     </div>
     <button id="refreshStats">REFRESH DATA</button>
+    <button id="cleanSpamBtn" style="background:#8a0d20;margin-top:8px;">BERSIHIN USER SPAM</button>
     <div class="msg" id="statMsg"></div>
   </div>
 
-  <!-- AKTIVASI USER -->
   <div class="card">
     <h2>Aktivasi User</h2>
     <label>EMAIL USER</label>
     <input type="email" id="email" placeholder="user@email.com">
-
     <label>TIER</label>
     <select id="tier">
       <option value="free">Free - 10 req/hari</option>
@@ -78,15 +76,27 @@ button:disabled{background:#1e1e1e;color:#666;box-shadow:none;cursor:not-allowed
       <option value="pro">Pro - 200 req/hari (Rp 50rb)</option>
       <option value="ultra">Ultra - 500 req/hari (Rp 150rb)</option>
     </select>
-
     <label>DURASI (HARI)</label>
     <input type="number" id="days" value="30" min="1">
-
     <button id="activateBtn">AKTIFKAN</button>
     <div class="msg" id="msg"></div>
   </div>
 
-  <!-- DAFTAR USER -->
+  <div class="card">
+    <h2>Blokir Email</h2>
+    <label>EMAIL YANG DIBLOKIR</label>
+    <input type="email" id="blockEmail" placeholder="spam@mailinator.com">
+    <label>ALASAN (OPSIONAL)</label>
+    <input type="text" id="blockReason" placeholder="Email temporary">
+    <button id="blockBtn">BLOKIR EMAIL</button>
+    <div class="msg" id="blockMsg"></div>
+
+    <h2 style="margin-top:24px;">Daftar Email Diblokir</h2>
+    <div class="user-list" id="blockedList">
+      <div class="info">Memuat data...</div>
+    </div>
+  </div>
+
   <div class="card">
     <h2>Daftar User</h2>
     <input type="text" class="search-input" id="searchUser" placeholder="Cari email...">
@@ -108,9 +118,8 @@ button:disabled{background:#1e1e1e;color:#666;box-shadow:none;cursor:not-allowed
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===== CONFIG ===== */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAPx6XY8CRDrS8sxh00uNjWsymTu8jD95M",
   authDomain: "khai-b6e18.firebaseapp.com",
@@ -122,6 +131,15 @@ const FIREBASE_CONFIG = {
 
 const ADMIN_EMAIL = "uhuystudio.1@gmail.com";
 const TIER_LIMITS = { free: 10, basic: 50, pro: 200, ultra: 500 };
+const BLOCKED_DOMAINS = [
+  "mailinator.com","tempmail.com","guerrillamail.com",
+  "10minutemail.com","throwawaymail.com","yopmail.com",
+  "sharklasers.com","grr.la","guerrillamailblock.com",
+  "temp-mail.org","fakeinbox.com","dispostable.com",
+  "mailnesia.com","trashmail.com","maildrop.cc",
+  "getnada.com","mailcatch.com","tempinbox.com",
+  "mintemail.com","spamgourmet.com","trash-mail.com"
+];
 
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -131,7 +149,6 @@ const msg = document.getElementById("msg");
 const btn = document.getElementById("activateBtn");
 const statMsg = document.getElementById("statMsg");
 
-/* ===== AUTH CHECK ===== */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -139,8 +156,8 @@ onAuthStateChanged(auth, (user) => {
     alert("Akses ditolak. Halaman ini cuma buat admin.");
     window.location.href = "chat.html";
   } else {
-    // Admin login → load data
     loadStats();
+    loadBlockedEmails();
   }
 });
 
@@ -163,42 +180,111 @@ btn.onclick = async () => {
   try {
     const userRef = doc(db, "users", email);
     const userDoc = await getDoc(userRef);
-
     const limit = TIER_LIMITS[tier] || 10;
     const premiumUntil = Date.now() + (days * 24 * 60 * 60 * 1000);
 
     if (!userDoc.exists()) {
       await setDoc(userRef, {
-        email: email,
-        used: 0,
-        limit: limit,
-        start: Date.now(),
-        premium: tier !== "free",
-        premiumUntil: tier !== "free" ? premiumUntil : 0,
-        tier: tier
+        email: email, used: 0, limit: limit, start: Date.now(),
+        premium: tier !== "free", premiumUntil: tier !== "free" ? premiumUntil : 0, tier: tier
       });
     } else {
       await updateDoc(userRef, {
-        limit: limit,
-        premium: tier !== "free",
-        premiumUntil: tier !== "free" ? premiumUntil : 0,
-        tier: tier
+        limit: limit, premium: tier !== "free",
+        premiumUntil: tier !== "free" ? premiumUntil : 0, tier: tier
       });
     }
 
     msg.textContent = "Berhasil! " + email + " sekarang " + tier.toUpperCase() + " (" + limit + " req/hari)";
     msg.style.color = "#ff0033";
     document.getElementById("email").value = "";
-
-    // Refresh stats
     loadStats();
 
   } catch (e) {
     msg.textContent = "Error: " + e.message;
     msg.style.color = "#ff0033";
   }
-
   btn.disabled = false;
+};
+
+/* ===== BLOKIR EMAIL ===== */
+document.getElementById("blockBtn").onclick = async function(){
+  const email = document.getElementById("blockEmail").value.trim().toLowerCase();
+  const reason = document.getElementById("blockReason").value.trim() || "Tidak disebutkan";
+  const blockMsg = document.getElementById("blockMsg");
+
+  if(!email || email.indexOf("@") === -1){
+    blockMsg.textContent = "Email tidak valid.";
+    blockMsg.style.color = "#ff0033";
+    return;
+  }
+
+  if(email === ADMIN_EMAIL){
+    blockMsg.textContent = "Gak bisa blokir email owner.";
+    blockMsg.style.color = "#ff0033";
+    return;
+  }
+
+  this.disabled = true;
+  blockMsg.textContent = "Memblokir...";
+  blockMsg.style.color = "#909090";
+
+  try {
+    await setDoc(doc(db, "blocked_emails", email), {
+      email: email, reason: reason, blockedAt: Date.now()
+    });
+    blockMsg.textContent = "Email " + email + " berhasil diblokir.";
+    blockMsg.style.color = "#ff0033";
+    document.getElementById("blockEmail").value = "";
+    document.getElementById("blockReason").value = "";
+    loadBlockedEmails();
+  } catch(e){
+    blockMsg.textContent = "Error: " + e.message;
+    blockMsg.style.color = "#ff0033";
+  }
+  this.disabled = false;
+};
+
+/* ===== LOAD DAFTAR EMAIL DIBLOKIR ===== */
+async function loadBlockedEmails(){
+  const list = document.getElementById("blockedList");
+  if(!list) return;
+  list.innerHTML = '<div class="info">Loading...</div>';
+
+  try {
+    const snapshot = await getDocs(collection(db, "blocked_emails"));
+    if(snapshot.empty){
+      list.innerHTML = '<div class="info">Belum ada email diblokir.</div>';
+      return;
+    }
+
+    let html = "";
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const date = new Date(data.blockedAt).toLocaleDateString('id-ID');
+      html += `<div class="user-item">
+        <div style="flex:1;overflow:hidden;">
+          <div class="email" style="font-size:11px;">${data.email}</div>
+          <div style="font-size:9px;color:#606060;margin-top:2px;">${data.reason} · ${date}</div>
+        </div>
+        <span class="tier" style="cursor:pointer;background:rgba(255,0,51,.15);color:#ff0033;" onclick="unblockEmail('${data.email}')">UNBLOCK</span>
+      </div>`;
+    });
+    list.innerHTML = html;
+  } catch(e){
+    list.innerHTML = '<div class="info">Error: ' + e.message + '</div>';
+  }
+}
+
+/* ===== UNBLOCK EMAIL ===== */
+window.unblockEmail = async function(email){
+  if(!confirm("Unblock email " + email + "?")) return;
+  try {
+    await deleteDoc(doc(db, "blocked_emails", email));
+    loadBlockedEmails();
+  } catch(e){
+    alert("Error: " + e.message);
+  }
 };
 
 /* ===== LOAD STATS ===== */
@@ -207,12 +293,8 @@ async function loadStats() {
   statMsg.style.color = "#909090";
 
   try {
-    const usersRef = collection(db, "users");
-    const snapshot = await getDocs(usersRef);
-
-    let total = 0;
-    let premium = 0;
-    let activeToday = 0;
+    const snapshot = await getDocs(collection(db, "users"));
+    let total = 0, premium = 0, activeToday = 0;
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
     const users = [];
@@ -223,29 +305,52 @@ async function loadStats() {
       if (data.premium) premium++;
       if (data.start && (now - data.start) < dayMs) activeToday++;
       users.push({
-        email: docSnap.id,
-        tier: data.tier || "free",
-        used: data.used || 0,
-        limit: data.limit || 10,
-        premium: data.premium || false
+        email: docSnap.id, tier: data.tier || "free",
+        used: data.used || 0, limit: data.limit || 10, premium: data.premium || false
       });
     });
 
     document.getElementById("statTotal").textContent = total;
     document.getElementById("statPremium").textContent = premium;
     document.getElementById("statActive").textContent = activeToday;
-
-    // Render user list
     renderUserList(users);
-
     statMsg.textContent = "Data terakhir dimuat: " + new Date().toLocaleTimeString('id-ID');
     statMsg.style.color = "#ff0033";
-
   } catch (e) {
     statMsg.textContent = "Error: " + e.message;
     statMsg.style.color = "#ff0033";
   }
 }
+
+/* ===== BERSIHIN USER SPAM ===== */
+document.getElementById("cleanSpamBtn").onclick = async function(){
+  if(!confirm("Hapus semua user dengan email temporary (Mailinator, dll)?")) return;
+  this.disabled = true;
+  this.textContent = "MEMPROSES...";
+
+  try {
+    const snapshot = await getDocs(collection(db, "users"));
+    let deleted = 0;
+    let deletedEmails = [];
+
+    for(const docSnap of snapshot.docs){
+      const email = docSnap.id;
+      const domain = email.split("@")[1]?.toLowerCase();
+      if(BLOCKED_DOMAINS.includes(domain)){
+        await deleteDoc(doc(db, "users", email));
+        deleted++;
+        deletedEmails.push(email);
+      }
+    }
+
+    alert("Berhasil hapus " + deleted + " user spam:\n\n" + deletedEmails.join("\n"));
+    loadStats();
+  } catch(e){
+    alert("Error: " + e.message);
+  }
+  this.disabled = false;
+  this.textContent = "BERSIHIN USER SPAM";
+};
 
 /* ===== RENDER USER LIST ===== */
 let allUsers = [];
@@ -253,18 +358,14 @@ function renderUserList(users) {
   allUsers = users;
   const list = document.getElementById("userList");
   const search = document.getElementById("searchUser").value.toLowerCase().trim();
-
   let filtered = users;
-  if (search) {
-    filtered = users.filter(u => u.email.toLowerCase().includes(search));
-  }
+  if (search) filtered = users.filter(u => u.email.toLowerCase().includes(search));
 
   if (!filtered.length) {
     list.innerHTML = '<div class="info">Tidak ada user.</div>';
     return;
   }
 
-  // Sort: premium dulu, terus alfabetis
   filtered.sort((a, b) => {
     if (a.premium && !b.premium) return -1;
     if (!a.premium && b.premium) return 1;
@@ -280,13 +381,11 @@ function renderUserList(users) {
   }).join("");
 }
 
-/* ===== SEARCH ===== */
 document.getElementById("searchUser").addEventListener("input", () => {
   renderUserList(allUsers);
 });
 
-/* ===== REFRESH BUTTON ===== */
 document.getElementById("refreshStats").onclick = loadStats;
 </script>
 </body>
-  </html>
+      </html>
