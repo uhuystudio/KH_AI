@@ -475,11 +475,47 @@ async function reply(p){
     
 
 /* ===== ACTIONS ===== */
-function attachActions(tb,replyText,userMsg){
-  addAction(tb,"SALIN",function(){const b=this;if(navigator.clipboard)navigator.clipboard.writeText(replyText);b.textContent="TERSALIN";b.classList.add("done");setTimeout(function(){b.textContent="SALIN";b.classList.remove("done");},1500);});
-  addAction(tb,"REGENERATE",async function(){if(busy)return;busy=true;hist.pop();tb.parentElement.remove();const l2=ld();let r2="";try{r2=await reply(userMsg);}catch(e){r2="Error: "+e.message;}l2.remove();if(!r2){busy=false;return;}const n2=addAI();const c2=renderContent(r2);await ty(n2.bubble,c2,50);attachActions(n2.toolbar,r2,userMsg);busy=false;});
-}
-
+function attachActions(tb,replyText,userMsg,finishReason){
+  addAction(tb,"SALIN",function(){
+    const b=this;
+    if(navigator.clipboard)navigator.clipboard.writeText(replyText);
+    b.textContent="TERSALIN";b.classList.add("done");
+    setTimeout(function(){b.textContent="SALIN";b.classList.remove("done");},1500);
+  });
+  addAction(tb,"REGENERATE",async function(){
+    if(busy)return;
+    busy=true;hist.pop();tb.parentElement.remove();
+    const l2=ld();
+    let r2=null;
+    try{r2=await reply(userMsg);}catch(e){r2={text:"Error: "+e.message,finish_reason:"stop"};}
+    l2.remove();
+    if(!r2||!r2.text){busy=false;return;}
+    const n2=addAI();
+    const c2=renderContent(r2.text);
+    await ty(n2.bubble,c2,50);
+    attachActions(n2.toolbar,r2.text,userMsg,r2.finish_reason);
+    busy=false;
+  });
+  if(finishReason === "length"){
+    addAction(tb,"LANJUTKAN",async function(){
+      if(busy)return;
+      busy=true;
+      this.remove();
+      const l3=ld();
+      const lanjutPrompt = "Lanjutkan jawaban sebelumnya dari titik terakhir tanpa mengulang. Teks terakhir: ..." + replyText.slice(-200);
+      let r3=null;
+      try{r3=await reply(lanjutPrompt);}catch(e){r3={text:"Error: "+e.message,finish_reason:"stop"};}
+      l3.remove();
+      if(r3&&r3.text){
+        const n3=addAI();
+        const c3=renderContent(r3.text);
+        await ty(n3.bubble,c3,50);
+        attachActions(n3.toolbar,r3.text,lanjutPrompt,r3.finish_reason);
+      }
+      busy=false;
+    });
+  }
+    }
 function autoTitle(t){return t.length>30?t.substring(0,30)+"...":t;}
 function saveCurrentChat(){if(!currentChatId)return;const c=chats.find(x=>x.id===currentChatId);if(c){c.messages=hist;saveChats();renderSidebar();}}
 
