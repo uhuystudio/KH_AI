@@ -144,6 +144,7 @@ code{font-family:'Courier New',monospace}
 .modal-box p{color:#909090;font-size:13px;margin-bottom:20px;line-height:1.7}
 .modal-box .price{color:#ff0033;font-size:28px;font-weight:800;margin:12px 0;text-shadow:0 0 20px rgba(255,0,51,.5)}
 .modal-box .price span{font-size:12px;color:#909090;font-weight:400}
+.pay-hint{font-size:11px;color:#909090;margin-top:14px;text-align:center;line-height:1.6;padding:12px;background:#050505;border:1px solid #1a1a1a;border-radius:8px}
 .modal-btns{display:flex;gap:10px;justify-content:center;margin-top:20px}
 .modal-btns button{padding:12px 24px;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.1em;cursor:pointer;border:1px solid #222;background:transparent;color:#909090}
 .modal-btns button:hover{border-color:#ff0033;color:#ff0033}
@@ -182,12 +183,22 @@ code{font-family:'Courier New',monospace}
 
 <div class="modal" id="upgradeModal">
   <div class="modal-box">
-    <h3>LIMIT HABIS</h3>
-    <p>Kamu udah pakai 10 request hari ini. Tunggu besok atau hubungi admin untuk upgrade.</p>
-    <div class="price">Rp 25.000 <span>/ bulan</span></div>
+    <h3>UPGRADE PAKET</h3>
+    <p>Limit harian kamu habis. Upgrade buat lanjut chat.</p>
+
+    <div class="price">Rp 20.000 <span>/ bulan</span></div>
+    <ul>
+      <li>50 request per hari</li>
+      <li>Riwayat 30 hari</li>
+      <li>Export chat</li>
+      <li>Support via TikTok</li>
+    </ul>
+
+    <p class="pay-hint">Klik tombol di bawah buat DM admin di TikTok. Kirim email akun KH AI kamu, nanti admin kasih QRIS buat bayar.</p>
+
     <div class="modal-btns">
-      <button onclick="document.getElementById('upgradeModal').classList.remove('show')">Tutup</button>
-      <button class="primary" onclick="alert('Hubungi admin untuk upgrade.')">Upgrade</button>
+      <button onclick="document.getElementById('upgradeModal').classList.remove('show')">Nanti</button>
+      <button class="primary" id="dmBtn">DM TikTok</button>
     </div>
   </div>
 </div>
@@ -660,6 +671,11 @@ function speakText(text){
   u.pitch = 1.0;
   speechSynthesis.speak(u);
 }
+/* ===== PEMBAYARAN VIA TIKTOK ===== */
+const TIKTOK_USERNAME = "uhuystudioofficial";
+document.getElementById("dmBtn").onclick = function(){
+  window.open("https://www.tiktok.com/@uhuystudioofficial" + TIKTOK_USERNAME, "_blank");
+};
 inp.addEventListener("input",ag);
 inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sd();}});
 btn.addEventListener("click",sd);
