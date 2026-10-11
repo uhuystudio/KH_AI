@@ -452,7 +452,11 @@ function ty(el,node,speed){return new Promise(function(res){node.style.opacity="
 async function reply(p){
   try{
     hist.push({role:"user",content:p});
-    if(hist.length>20)hist=hist.slice(-20);
+    let totalChars = hist.reduce(function(sum,m){return sum + m.content.length;}, 0);
+while(hist.length > 1 && totalChars > 3000){
+  const removed = hist.shift();
+  totalChars -= removed.content.length;
+    }
     const msgs=[{role:"system",content:"Kamu adalah KH AI, asisten cerdas berbahasa Indonesia. Jawab langsung, jelas, to the point. Kalau user minta kode, kasih kode dalam format markdown code block dengan nama bahasa di baris pertama."}].concat(hist);
     idToken = await currentUser.getIdToken();
     const res=await fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+idToken},body:JSON.stringify({messages:msgs})});
