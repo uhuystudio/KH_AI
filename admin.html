@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KH AI - Admin Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e0e0e0;font-family:monospace;min-height:100vh;padding:24px}
+.wrap{max-width:600px;margin:0 auto}
+h1{font-size:22px;letter-spacing:.15em;color:#fff;margin-bottom:8px;text-shadow:0 0 12px rgba(255,0,51,.6)}
+.sub{color:#808080;font-size:11px;letter-spacing:.2em;margin-bottom:30px;text-transform:uppercase}
+.card{background:#0a0a0a;border:1px solid #1e1e1e;border-radius:14px;padding:24px;margin-bottom:16px}
+.card h2{color:#ff0033;font-size:13px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
+label{font-size:10px;color:#909090;letter-spacing:.1em;display:block;margin-bottom:6px;margin-top:12px}
+input,select{width:100%;padding:12px 14px;background:#121212;border:1px solid #222;border-radius:8px;color:#e8e8e8;font-family:monospace;font-size:13px;outline:none;transition:.2s}
+input:focus,select:focus{border-color:#ff0033}
+button{width:100%;padding:14px;background:#ff0033;color:#000;border:0;border-radius:10px;font-family:monospace;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:20px;box-shadow:0 0 20px rgba(255,0,51,.4);transition:.2s}
+button:hover{box-shadow:0 0 32px rgba(255,0,51,.7)}
+button:active{transform:scale(.98)}
+button:disabled{background:#1e1e1e;color:#666;box-shadow:none;cursor:not-allowed}
+.msg{margin-top:14px;font-size:12px;min-height:18px;text-align:center;letter-spacing:.05em}
+.info{background:#050505;border:1px solid #1a1a1a;border-radius:10px;padding:14px;margin-top:14px;font-size:11px;color:#909090;line-height:1.7}
+.info b{color:#ff0033}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat-item{background:#050505;border:1px solid #1a1a1a;border-radius:10px;padding:16px;text-align:center}
+.stat-num{font-size:28px;font-weight:800;color:#ff0033;margin-bottom:6px;text-shadow:0 0 12px rgba(255,0,51,.5)}
+.stat-label{font-size:9px;color:#909090;letter-spacing:.1em;text-transform:uppercase}
+.user-list{max-height:300px;overflow-y:auto;margin-top:16px}
+.user-list::-webkit-scrollbar{width:5px}
+.user-list::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:5px}
+.user-item{padding:10px 12px;background:#050505;border:1px solid #1a1a1a;border-radius:8px;margin-bottom:6px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.user-item .email{color:#c0c0c0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-item .tier{font-size:9px;padding:3px 8px;border-radius:10px;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+.tier-free{background:#1a1a1a;color:#808080}
+.tier-basic{background:rgba(255,0,51,.15);color:#ff0033}
+.tier-pro{background:rgba(255,0,51,.25);color:#ff3355}
+.tier-ultra{background:#ff0033;color:#000;font-weight:700}
+.search-input{margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>KH AI ADMIN</h1>
+  <div class="sub">Control Panel</div>
+
+  <!-- STATISTIK -->
+  <div class="card">
+    <h2>Statistik</h2>
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-num" id="statTotal">-</div>
+        <div class="stat-label">Total User</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="statPremium">-</div>
+        <div class="stat-label">Premium</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="statActive">-</div>
+        <div class="stat-label">Aktif Hari Ini</div>
+      </div>
+    </div>
+    <button id="refreshStats">REFRESH DATA</button>
+    <div class="msg" id="statMsg"></div>
+  </div>
+
+  <!-- AKTIVASI USER -->
+  <div class="card">
+    <h2>Aktivasi User</h2>
+    <label>EMAIL USER</label>
+    <input type="email" id="email" placeholder="user@email.com">
+
+    <label>TIER</label>
+    <select id="tier">
+      <option value="free">Free - 10 req/hari</option>
+      <option value="basic">Basic - 50 req/hari (Rp 20rb)</option>
+      <option value="pro">Pro - 200 req/hari (Rp 50rb)</option>
+      <option value="ultra">Ultra - 500 req/hari (Rp 150rb)</option>
+    </select>
+
+    <label>DURASI (HARI)</label>
+    <input type="number" id="days" value="30" min="1">
+
+    <button id="activateBtn">AKTIFKAN</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- DAFTAR USER -->
+  <div class="card">
+    <h2>Daftar User</h2>
+    <input type="text" class="search-input" id="searchUser" placeholder="Cari email...">
+    <div class="user-list" id="userList">
+      <div class="info">Klik "Refresh Data" buat load daftar user.</div>
+    </div>
+  </div>
+
+  <div class="info">
+    <b>Info Tier:</b><br>
+    - Free: 10 req/hari (gratis)<br>
+    - Basic: 50 req/hari (Rp 20rb/bulan)<br>
+    - Pro: 200 req/hari (Rp 50rb/bulan)<br>
+    - Ultra: 500 req/hari (Rp 150rb/bulan)<br><br>
+    <b>Note:</b> Panel ini cuma buat admin. Jangan share link ke siapapun.
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ===== CONFIG ===== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAPx6XY8CRDrS8sxh00uNjWsymTu8jD95M",
+  authDomain: "khai-b6e18.firebaseapp.com",
+  projectId: "khai-b6e18",
+  storageBucket: "khai-b6e18.firebasestorage.app",
+  messagingSenderId: "903942429337",
+  appId: "1:903942429337:web:9a21b3b38c7bc917be3608"
+};
+
+const ADMIN_EMAIL = "uhuystudio.1@gmail.com";
+const TIER_LIMITS = { free: 10, basic: 50, pro: 200, ultra: 500 };
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const msg = document.getElementById("msg");
+const btn = document.getElementById("activateBtn");
+const statMsg = document.getElementById("statMsg");
+
+/* ===== AUTH CHECK ===== */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else if (user.email !== ADMIN_EMAIL) {
+    alert("Akses ditolak. Halaman ini cuma buat admin.");
+    window.location.href = "chat.html";
+  } else {
+    // Admin login → load data
+    loadStats();
+  }
+});
+
+/* ===== AKTIVASI USER ===== */
+btn.onclick = async () => {
+  const email = document.getElementById("email").value.trim();
+  const tier = document.getElementById("tier").value;
+  const days = parseInt(document.getElementById("days").value) || 30;
+
+  if (!email || email.indexOf("@") === -1) {
+    msg.textContent = "Email tidak valid.";
+    msg.style.color = "#ff0033";
+    return;
+  }
+
+  btn.disabled = true;
+  msg.textContent = "Memproses...";
+  msg.style.color = "#909090";
+
+  try {
+    const userRef = doc(db, "users", email);
+    const userDoc = await getDoc(userRef);
+
+    const limit = TIER_LIMITS[tier] || 10;
+    const premiumUntil = Date.now() + (days * 24 * 60 * 60 * 1000);
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        email: email,
+        used: 0,
+        limit: limit,
+        start: Date.now(),
+        premium: tier !== "free",
+        premiumUntil: tier !== "free" ? premiumUntil : 0,
+        tier: tier
+      });
+    } else {
+      await updateDoc(userRef, {
+        limit: limit,
+        premium: tier !== "free",
+        premiumUntil: tier !== "free" ? premiumUntil : 0,
+        tier: tier
+      });
+    }
+
+    msg.textContent = "Berhasil! " + email + " sekarang " + tier.toUpperCase() + " (" + limit + " req/hari)";
+    msg.style.color = "#ff0033";
+    document.getElementById("email").value = "";
+
+    // Refresh stats
+    loadStats();
+
+  } catch (e) {
+    msg.textContent = "Error: " + e.message;
+    msg.style.color = "#ff0033";
+  }
+
+  btn.disabled = false;
+};
+
+/* ===== LOAD STATS ===== */
+async function loadStats() {
+  statMsg.textContent = "Memuat data...";
+  statMsg.style.color = "#909090";
+
+  try {
+    const usersRef = collection(db, "users");
+    const snapshot = await getDocs(usersRef);
+
+    let total = 0;
+    let premium = 0;
+    let activeToday = 0;
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const users = [];
+
+    snapshot.forEach((docSnap) => {
+      total++;
+      const data = docSnap.data();
+      if (data.premium) premium++;
+      if (data.start && (now - data.start) < dayMs) activeToday++;
+      users.push({
+        email: docSnap.id,
+        tier: data.tier || "free",
+        used: data.used || 0,
+        limit: data.limit || 10,
+        premium: data.premium || false
+      });
+    });
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statPremium").textContent = premium;
+    document.getElementById("statActive").textContent = activeToday;
+
+    // Render user list
+    renderUserList(users);
+
+    statMsg.textContent = "Data terakhir dimuat: " + new Date().toLocaleTimeString('id-ID');
+    statMsg.style.color = "#ff0033";
+
+  } catch (e) {
+    statMsg.textContent = "Error: " + e.message;
+    statMsg.style.color = "#ff0033";
+  }
+}
+
+/* ===== RENDER USER LIST ===== */
+let allUsers = [];
+function renderUserList(users) {
+  allUsers = users;
+  const list = document.getElementById("userList");
+  const search = document.getElementById("searchUser").value.toLowerCase().trim();
+
+  let filtered = users;
+  if (search) {
+    filtered = users.filter(u => u.email.toLowerCase().includes(search));
+  }
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="info">Tidak ada user.</div>';
+    return;
+  }
+
+  // Sort: premium dulu, terus alfabetis
+  filtered.sort((a, b) => {
+    if (a.premium && !b.premium) return -1;
+    if (!a.premium && b.premium) return 1;
+    return a.email.localeCompare(b.email);
+  });
+
+  list.innerHTML = filtered.map(u => {
+    const tierClass = "tier-" + u.tier;
+    return `<div class="user-item">
+      <span class="email">${u.email}</span>
+      <span class="tier ${tierClass}">${u.tier}</span>
+    </div>`;
+  }).join("");
+}
+
+/* ===== SEARCH ===== */
+document.getElementById("searchUser").addEventListener("input", () => {
+  renderUserList(allUsers);
+});
+
+/* ===== REFRESH BUTTON ===== */
+document.getElementById("refreshStats").onclick = loadStats;
+</script>
+</body>
+  </html>
