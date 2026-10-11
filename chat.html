@@ -87,6 +87,15 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .ibox .bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid #181818}
 .usage{font-size:11px;color:#909090;letter-spacing:.1em}
 .usage b{color:#ff0033}
+.mic{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
+.mic:hover{color:#ff0033;border-color:#8a0d20}
+.mic.recording{color:#ff0033;border-color:#ff0033;animation:pulse 1s infinite}
+.mic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.speak{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
+.speak:hover{color:#ff0033;border-color:#8a0d20}
+.speak.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1)}
+.speak svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .send{width:34px;height:34px;display:grid;place-items:center;background:#ff0033;border:0;border-radius:9px;cursor:pointer;box-shadow:0 0 18px rgba(255,0,51,.45)}
 .send:disabled{background:#1e1e1e;box-shadow:none;cursor:not-allowed}
 .send svg{width:15px;height:15px}
@@ -231,7 +240,9 @@ code{font-family:'Courier New',monospace}
       <textarea id="in" rows="1" placeholder="Ketik perintah..."></textarea>
       <div class="bar">
         <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
-        <button class="send" id="send"><svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg></button>
+        <button class="mic" id="micBtn" title="Voice Input"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button>
+<button class="speak" id="speakBtn" title="Voice Output"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
+<button class="send" id="send"><svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg></button>
       </div>
     </div>
     <div class="disc">KH AI dapat membuat kesalahan. Periksa info penting.</div>
@@ -546,6 +557,7 @@ async function sd(){
     const c=renderContent(r.text);
     await ty(n.bubble,c,50);
     attachActions(n.toolbar,r.text,t,r.finish_reason);
+    speakText(r.text);
     saveCurrentChat();
   }
   busy=false;btn.disabled=false;inp.focus();
@@ -589,6 +601,65 @@ document.getElementById("logoutBtn").onclick=async function(){
 };
 
 /* ===== INPUT ===== */
+/* ===== VOICE INPUT ===== */
+let recognition = null;
+let isRecording = false;
+if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'id-ID';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.onresult = function(e){
+    let text = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      text += e.results[i][0].transcript;
+    }
+    inp.value = text;
+    ag();
+  };
+  recognition.onend = function(){
+    isRecording = false;
+    document.getElementById("micBtn").classList.remove("recording");
+  };
+  recognition.onerror = function(e){
+    console.log("Speech error:", e.error);
+    isRecording = false;
+    document.getElementById("micBtn").classList.remove("recording");
+  };
+}
+document.getElementById("micBtn").onclick = function(){
+  if(!recognition){alert("Browser kamu gak support voice input. Coba pakai Chrome.");return;}
+  if(isRecording){recognition.stop();isRecording=false;this.classList.remove("recording");return;}
+  isRecording = true;
+  this.classList.add("recording");
+  recognition.start();
+};
+
+/* ===== VOICE OUTPUT ===== */
+let speakOn = false;
+document.getElementById("speakBtn").onclick = function(){
+  speakOn = !speakOn;
+  this.classList.toggle("active", speakOn);
+  if(speakOn && 'speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance("Suara aktif");
+    u.lang = 'id-ID';
+    u.rate = 1.0;
+    speechSynthesis.speak(u);
+  } else if(!speakOn && 'speechSynthesis' in window){
+    speechSynthesis.cancel();
+  }
+};
+function speakText(text){
+  if(!speakOn || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const clean = text.replace(/```[\s\S]*?```/g, ' (kode) ').replace(/`[^`]+`/g, '').replace(/[#*_~\[\]()>]/g, '').replace(/\n+/g, '. ').substring(0, 500);
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = 'id-ID';
+  u.rate = 1.0;
+  u.pitch = 1.0;
+  speechSynthesis.speak(u);
+}
 inp.addEventListener("input",ag);
 inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sd();}});
 btn.addEventListener("click",sd);
