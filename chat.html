@@ -453,9 +453,9 @@ async function reply(p){
   try{
     hist.push({role:"user",content:p});
     let totalChars = hist.reduce(function(sum,m){return sum + m.content.length;}, 0);
-while(hist.length > 1 && totalChars > 3000){
-  const removed = hist.shift();
-  totalChars -= removed.content.length;
+    while(hist.length > 1 && totalChars > 3000){
+      const removed = hist.shift();
+      totalChars -= removed.content.length;
     }
     const msgs=[{role:"system",content:"Kamu adalah KH AI, asisten cerdas berbahasa Indonesia. Jawab langsung, jelas, to the point. Kalau user minta kode, kasih kode dalam format markdown code block dengan nama bahasa di baris pertama."}].concat(hist);
     idToken = await currentUser.getIdToken();
@@ -472,6 +472,7 @@ while(hist.length > 1 && totalChars > 3000){
     return { text: r, finish_reason: d.finish_reason || "stop" };
   }catch(e){hist.pop();return {text:"Koneksi gagal:\n"+e.message, finish_reason:"stop"};}
     }
+    
 
 /* ===== ACTIONS ===== */
 function attachActions(tb,replyText,userMsg){
