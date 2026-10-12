@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>KH AI</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -58,7 +58,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:12p
 .sb-logout:hover{border-color:#ff0033;color:#ff0033}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;display:none}
 .overlay.show{display:block}
-main{flex:1;overflow-y:auto;padding:20px 16px;scroll-behavior:smooth}
+main{flex:1;overflow-y:auto;padding:20px 16px 180px;scroll-behavior:smooth}
 main::-webkit-scrollbar{width:6px}
 main::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:6px}
 .wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
@@ -79,7 +79,7 @@ main::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:6px}
 .hero h1{font-size:clamp(30px,9vw,52px);font-weight:800;letter-spacing:.08em;color:#fff;text-shadow:0 0 24px rgba(255,0,51,.6);margin-bottom:10px}
 .hero h1 span{color:#ff0033}
 .hero .sub{font-size:clamp(12px,3vw,14px);color:#808080;margin-bottom:24px}
-footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgba(0,0,0,.9);backdrop-filter:blur(14px);border-top:1px solid #1e1e1e;z-index:100}
+footer{position:fixed;bottom:0;left:0;right:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgba(0,0,0,.95);backdrop-filter:blur(14px);border-top:1px solid #1e1e1e;z-index:100}
 .ibox{max-width:820px;margin:0 auto;background:#0a0a0a;border:1px solid #222;border-radius:20px;padding:12px 14px}
 .ibox:focus-within{border-color:rgba(255,0,51,.55);box-shadow:0 0 0 3px rgba(255,0,51,.08)}
 .ibox textarea{width:100%;background:transparent;border:0;outline:0;resize:none;color:#e8e8e8;font-family:monospace;font-size:14px;line-height:1.6;max-height:150px;padding:4px 0}
@@ -87,33 +87,19 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .ibox .bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid #181818}
 .usage{font-size:11px;color:#909090;letter-spacing:.1em}
 .usage b{color:#ff0033}
-.mic{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
-.mic:hover{color:#ff0033;border-color:#8a0d20}
-.mic.recording{color:#ff0033;border-color:#ff0033;animation:pulse 1s infinite}
-.mic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.speak{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
-.speak:hover{color:#ff0033;border-color:#8a0d20}
-.speak.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1)}
-.speak svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .btn-group{display:flex;align-items:center;gap:6px}
-.voice-chat-btn{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
+.voice-chat-btn{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;transition:.2s}
 .voice-chat-btn:hover{color:#ff0033;border-color:#8a0d20}
 .voice-chat-btn.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1);animation:pulse 1.5s infinite}
 .voice-chat-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.voice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.voice-overlay.show{display:flex}
-.voice-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff5577,#ff0033 30%,#8a0d20 65%,#1a0509 100%);box-shadow:0 0 60px rgba(255,0,51,.7),0 0 120px rgba(255,0,51,.35),inset 0 0 30px rgba(255,255,255,.15);animation:breathe 2s ease-in-out infinite;position:relative;margin-bottom:30px}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.voice-orb.listening{animation:pulse-red 1s infinite}
-@keyframes pulse-red{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(255,0,51,.7)}50%{transform:scale(1.15);box-shadow:0 0 100px rgba(255,0,51,1)}}
-.voice-orb.speaking{animation:pulse-speak 0.6s infinite}
-@keyframes pulse-speak{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-.voice-status{color:#fff;font-size:14px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;text-align:center;min-height:20px}
-.voice-text{color:#909090;font-size:12px;text-align:center;max-width:500px;line-height:1.7;margin-bottom:30px;min-height:60px}
-.voice-controls{display:flex;gap:12px}
-.voice-close{padding:12px 28px;background:transparent;border:1px solid #ff0033;border-radius:10px;color:#ff0033;font-family:monospace;font-size:12px;letter-spacing:.15em;cursor:pointer;text-transform:uppercase}
-.voice-close:hover{background:rgba(255,0,51,.1)}
+.mic{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;transition:.2s}
+.mic:hover{color:#ff0033;border-color:#8a0d20}
+.mic.recording{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1);animation:pulse 1s infinite}
+.mic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.speak{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;transition:.2s}
+.speak:hover{color:#ff0033;border-color:#8a0d20}
+.speak.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1)}
+.speak svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .send{width:34px;height:34px;display:grid;place-items:center;background:#ff0033;border:0;border-radius:9px;cursor:pointer;box-shadow:0 0 18px rgba(255,0,51,.45)}
 .send:disabled{background:#1e1e1e;box-shadow:none;cursor:not-allowed}
 .send svg{width:15px;height:15px}
@@ -128,9 +114,6 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .action{padding:3px 9px;font-family:monospace;font-size:10px;color:#909090;background:#0a0a0a;border:1px solid #222;border-radius:6px;cursor:pointer}
 .action:hover{color:#ff0033;border-color:#8a0d20}
 .action.done{color:#ff3355;border-color:#ff0033;background:rgba(255,0,51,.12)}
-  .lanjut-btn{margin-top:10px;padding:8px 18px;font-family:monospace;font-size:11px;letter-spacing:.15em;color:#ff0033;background:transparent;border:1px solid #ff0033;border-radius:8px;cursor:pointer;transition:.2s;text-transform:uppercase;align-self:flex-start}
-.lanjut-btn:hover{background:rgba(255,0,51,.1);box-shadow:0 0 16px rgba(255,0,51,.3)}
-.lanjut-btn:active{transform:scale(.96)}
 .bubble{max-width:100%;padding:14px 17px;border-radius:14px;font-size:14px;line-height:1.72;word-break:break-word}
 .user .bubble{background:#0f0f0f;border:1px solid #222;border-bottom-right-radius:4px;color:#d8d8d8;white-space:pre-wrap}
 .ai .bubble{background:#0a0a0a;border:1px solid #1a1a1a;border-bottom-left-radius:4px}
@@ -143,10 +126,10 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .codebtn.done{color:#ff3355;border-color:#ff0033;background:rgba(255,0,51,.12)}
 .codebtn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;margin-right:4px}
 pre{padding:14px;overflow-x:auto;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.6;color:#d8d8d8}
-  .codebody{position:relative}
-.codebody iframe{width:100%;height:320px;border:0;background:#fff;display:block}
 pre::-webkit-scrollbar{height:6px}
 pre::-webkit-scrollbar-thumb{background:#222;border-radius:6px}
+.codebody{position:relative}
+.codebody iframe{width:100%;height:320px;border:0;background:#fff;display:block}
 code{font-family:'Courier New',monospace}
 .loader{padding:15px 17px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:14px;border-bottom-left-radius:4px;min-width:190px}
 .track{position:relative;height:3px;background:#1a1a1a;border-radius:3px;overflow:hidden;margin-bottom:10px}
@@ -155,6 +138,7 @@ code{font-family:'Courier New',monospace}
 .lbl{font-size:10px;letter-spacing:.26em;color:#ff0033;text-transform:uppercase;opacity:.9}
 .cursor{display:inline-block;width:7px;height:12px;background:#ff0033;animation:blink .9s steps(1) infinite;vertical-align:middle;margin-left:6px}
 @keyframes blink{50%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.show{display:flex}
 .modal-box{background:#0a0a0a;border:1px solid #222;border-radius:16px;padding:28px;max-width:420px;width:100%;text-align:center}
@@ -162,12 +146,29 @@ code{font-family:'Courier New',monospace}
 .modal-box p{color:#909090;font-size:13px;margin-bottom:20px;line-height:1.7}
 .modal-box .price{color:#ff0033;font-size:28px;font-weight:800;margin:12px 0;text-shadow:0 0 20px rgba(255,0,51,.5)}
 .modal-box .price span{font-size:12px;color:#909090;font-weight:400}
+.modal-box ul{list-style:none;text-align:left;margin:16px 0;display:flex;flex-direction:column;gap:8px}
+.modal-box li{color:#c0c0c0;font-size:12px;padding-left:20px;position:relative}
+.modal-box li::before{content:"";position:absolute;left:0;top:6px;width:8px;height:8px;background:#ff0033;clip-path:polygon(0 0,100% 50%,0 100%)}
 .pay-hint{font-size:11px;color:#909090;margin-top:14px;text-align:center;line-height:1.6;padding:12px;background:#050505;border:1px solid #1a1a1a;border-radius:8px}
+#limitMsg b{color:#ff0033}
 .modal-btns{display:flex;gap:10px;justify-content:center;margin-top:20px}
 .modal-btns button{padding:12px 24px;border-radius:8px;font-family:monospace;font-size:12px;letter-spacing:.1em;cursor:pointer;border:1px solid #222;background:transparent;color:#909090}
 .modal-btns button:hover{border-color:#ff0033;color:#ff0033}
 .modal-btns .primary{background:#ff0033;color:#000;border-color:#ff0033;font-weight:700}
-@media(max-width:600px){main{padding:14px 12px}.bubble{font-size:13.5px}header{padding:10px 12px}.stage{width:170px;height:170px}.core{width:100px;height:100px}.ring2{inset:16px}.ring3{inset:32px}}
+.voice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.voice-overlay.show{display:flex}
+.voice-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff5577,#ff0033 30%,#8a0d20 65%,#1a0509 100%);box-shadow:0 0 60px rgba(255,0,51,.7),0 0 120px rgba(255,0,51,.35),inset 0 0 30px rgba(255,255,255,.15);animation:breathe 2s ease-in-out infinite;position:relative;margin-bottom:30px}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.voice-orb.listening{animation:pulse-red 1s infinite}
+@keyframes pulse-red{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(255,0,51,.7)}50%{transform:scale(1.15);box-shadow:0 0 100px rgba(255,0,51,1)}}
+.voice-orb.speaking{animation:pulse-speak 0.6s infinite}
+@keyframes pulse-speak{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.voice-status{color:#fff;font-size:14px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;text-align:center;min-height:20px}
+.voice-text{color:#909090;font-size:12px;text-align:center;max-width:500px;line-height:1.7;margin-bottom:30px;min-height:60px}
+.voice-controls{display:flex;gap:12px}
+.voice-close{padding:12px 28px;background:transparent;border:1px solid #ff0033;border-radius:10px;color:#ff0033;font-family:monospace;font-size:12px;letter-spacing:.15em;cursor:pointer;text-transform:uppercase}
+.voice-close:hover{background:rgba(255,0,51,.1)}
+@media(max-width:600px){main{padding:14px 12px 180px}.bubble{font-size:13.5px}header{padding:10px 12px}.stage{width:170px;height:170px}.core{width:100px;height:100px}.ring2{inset:16px}.ring3{inset:32px}}
 </style>
 </head>
 <body>
@@ -201,22 +202,19 @@ code{font-family:'Courier New',monospace}
 
 <div class="modal" id="upgradeModal">
   <div class="modal-box">
-    <h3>UPGRADE PAKET</h3>
-    <p>Limit harian kamu habis. Upgrade buat lanjut chat.</p>
-
+    <h3>Limit Habis</h3>
+    <p id="limitMsg">Kamu udah pakai 10 request hari ini. Tunggu besok jam <b>--:--</b> atau upgrade ke paket Basic.</p>
     <div class="price">Rp 20.000 <span>/ bulan</span></div>
     <ul>
       <li>50 request per hari</li>
       <li>Riwayat 30 hari</li>
       <li>Export chat</li>
-      <li>Support via TikTok</li>
+      <li>Support via WhatsApp</li>
     </ul>
-
-    <p class="pay-hint">Klik tombol di bawah buat DM admin di TikTok. Kirim email akun KH AI kamu, nanti admin kasih QRIS buat bayar.</p>
-
+    <p class="pay-hint">Klik tombol di bawah buat chat admin via WhatsApp. Kirim email akun KH AI kamu, nanti admin kasih QRIS buat bayar.</p>
     <div class="modal-btns">
-      <button onclick="document.getElementById('upgradeModal').classList.remove('show')">Nanti</button>
-      <button class="primary" id="dmBtn">DM TikTok</button>
+      <button onclick="document.getElementById('upgradeModal').classList.remove('show')">Tunggu Besok</button>
+      <button class="primary" id="waBtn">Upgrade ke Basic</button>
     </div>
   </div>
 </div>
@@ -229,6 +227,7 @@ code{font-family:'Courier New',monospace}
     <button class="voice-close" id="voiceCloseBtn">TUTUP</button>
   </div>
 </div>
+
 <div id="app">
   <header>
     <div class="hleft">
@@ -276,30 +275,34 @@ code{font-family:'Courier New',monospace}
     <div class="ibox">
       <textarea id="in" rows="1" placeholder="Ketik perintah..."></textarea>
       <div class="bar">
-  <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
-  <div class="btn-group">
-    <button class="voice-chat-btn" id="voiceChatBtn" title="Voice Chat">
-      <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M12 8a1.5 1.5 0 0 0-1.5 1.5v3a1.5 1.5 0 0 0 3 0v-3A1.5 1.5 0 0 0 12 8z"/></svg>
-    </button>
-    <button class="mic" id="micBtn" title="Voice Input">
-      <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
-    </button>
-    <button class="speak" id="speakBtn" title="Voice Output">
-      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-    </button>
-    <button class="send" id="send" title="Kirim">
-      <svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg>
-    </button>
-  </div>
+        <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
+        <div class="btn-group">
+          <button class="voice-chat-btn" id="voiceChatBtn" title="Voice Chat">
+            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M12 8a1.5 1.5 0 0 0-1.5 1.5v3a1.5 1.5 0 0 0 3 0v-3A1.5 1.5 0 0 0 12 8z"/></svg>
+          </button>
+          <button class="mic" id="micBtn" title="Voice Input">
+            <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+          </button>
+          <button class="speak" id="speakBtn" title="Voice Output">
+            <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <button class="send" id="send" title="Kirim">
+            <svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg>
+          </button>
+        </div>
       </div>
+    </div>
     <div class="disc">KH AI dapat membuat kesalahan. Periksa info penting.</div>
   </footer>
-  </div>
+</div>
+
+<!-- SCRIPT DITARUH DI BAGIAN 2 -->
+
   <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ===== CONFIG ===== */
+/* ===== CONFIG FIREBASE ===== */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAPx6XY8CRDrS8sxh00uNjWsymTu8jD95M",
   authDomain: "khai-b6e18.firebaseapp.com",
@@ -309,8 +312,13 @@ const FIREBASE_CONFIG = {
   appId: "1:903942429337:web:9a21b3b38c7bc917be3608"
 };
 
+/* ===== URL VERCEL ===== */
 const WORKER_URL = "https://kh-backend-liard.vercel.app/api/chat";
 
+/* ===== NOMOR WA ADMIN ===== */
+const WA_NUMBER = "628xxxxxxxxxx";
+
+/* ===== INIT ===== */
 const fbApp = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(fbApp);
 
@@ -327,7 +335,7 @@ window.addEventListener("load", () => {
   }, 2400);
 });
 
-/* ===== AUTH CHECK ===== */
+/* ===== AUTH ===== */
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
@@ -406,98 +414,33 @@ function renderContent(text){
       const block=parts[i];
       const lines=block.split("\n");
       let lang="code",code=block;
-      if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){
-        lang=lines[0].trim().toLowerCase();
-        code=lines.slice(1).join("\n");
-      }
+      if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){lang=lines[0].trim().toLowerCase();code=lines.slice(1).join("\n");}
       code=code.replace(/^\n+|\n+$/g,"");
-
-      const cb=document.createElement("div");
-      cb.className="codeblock";
-
-      const head=document.createElement("div");
-      head.className="codehead";
-
-      const langEl=document.createElement("span");
-      langEl.className="codelang";
-      langEl.textContent=lang;
-
-      const btns=document.createElement("div");
-      btns.className="codebtns";
-
-      // Tombol COPY
-      const copyBtn=document.createElement("button");
-      copyBtn.className="codebtn";
+      const cb=document.createElement("div");cb.className="codeblock";
+      const head=document.createElement("div");head.className="codehead";
+      const langEl=document.createElement("span");langEl.className="codelang";langEl.textContent=lang;
+      const btns=document.createElement("div");btns.className="codebtns";
+      const copyBtn=document.createElement("button");copyBtn.className="codebtn";
       copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';
-      copyBtn.onclick=function(){
-        if(navigator.clipboard)navigator.clipboard.writeText(code);
-        copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';
-        copyBtn.classList.add("done");
-        setTimeout(function(){
-          copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';
-          copyBtn.classList.remove("done");
-        },1500);
-      };
-      btns.appendChild(copyBtn);
-
-      head.appendChild(langEl);
-      head.appendChild(btns);
-
-      // Isi code block (bisa di-toggle antara code & preview)
-      const body=document.createElement("div");
-      body.className="codebody";
-
-      const pre=document.createElement("pre");
-      const codeEl=document.createElement("code");
-      codeEl.textContent=code;
-      pre.appendChild(codeEl);
-      body.appendChild(pre);
-
-      cb.appendChild(head);
-      cb.appendChild(body);
-
+      copyBtn.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(code);copyBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OK';copyBtn.classList.add("done");setTimeout(function(){copyBtn.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>COPY';copyBtn.classList.remove("done");},1500);};
+      btns.appendChild(copyBtn);head.appendChild(langEl);head.appendChild(btns);
+      const body=document.createElement("div");body.className="codebody";
+      const pre=document.createElement("pre");const codeEl=document.createElement("code");codeEl.textContent=code;pre.appendChild(codeEl);body.appendChild(pre);
+      cb.appendChild(head);cb.appendChild(body);
       if(lang==="html"||lang==="css"||lang==="javascript"||lang==="js"){
-        let previewOpen=false;
-        let previewIframe=null;
-
-        // Tombol CODE (buat balik ke code)
-        const codeBtn=document.createElement("button");
-        codeBtn.className="codebtn";
-        codeBtn.style.display="none";
-        codeBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>CODE';
-        codeBtn.onclick=function(){
-          if(previewIframe){previewIframe.remove();previewIframe=null;}
-          pre.style.display="block";
-          previewOpen=false;
-          codeBtn.style.display="none";
-          pv.style.display="inline-flex";
-        };
-
-        // Tombol PREVIEW (buat ganti ke preview)
-        const pv=document.createElement("button");
-        pv.className="codebtn";
-        pv.innerHTML='<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>PREVIEW';
-        pv.onclick=function(){
-          if(previewOpen)return;
-          pre.style.display="none";
-          previewIframe=document.createElement("iframe");
-          previewIframe.sandbox="allow-scripts";
-          previewIframe.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Ini contoh teks untuk lihat efek CSS-nya.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';
-          body.appendChild(previewIframe);
-          previewOpen=true;
-          pv.style.display="none";
-          codeBtn.style.display="inline-flex";
-        };
-
-        btns.appendChild(codeBtn);
-        btns.appendChild(pv);
+        let previewOpen=false,previewIframe=null;
+        const codeBtn=document.createElement("button");codeBtn.className="codebtn";codeBtn.style.display="none";codeBtn.innerHTML='CODE';
+        codeBtn.onclick=function(){if(previewIframe){previewIframe.remove();previewIframe=null;}pre.style.display="block";previewOpen=false;codeBtn.style.display="none";pv.style.display="inline-flex";};
+        const pv=document.createElement("button");pv.className="codebtn";pv.innerHTML='PREVIEW';
+        pv.onclick=function(){if(previewOpen)return;pre.style.display="none";previewIframe=document.createElement("iframe");previewIframe.sandbox="allow-scripts";previewIframe.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Ini contoh teks untuk lihat efek CSS-nya.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';body.appendChild(previewIframe);previewOpen=true;pv.style.display="none";codeBtn.style.display="inline-flex";};
+        btns.appendChild(codeBtn);btns.appendChild(pv);
       }
-
       container.appendChild(cb);
     }
   }
   return container;
-  }
+}
+
 /* ===== DOM ===== */
 const chat=document.getElementById("chat"),wrap=document.getElementById("wrap"),inp=document.getElementById("in"),btn=document.getElementById("send"),hero=document.getElementById("hero");
 const sidebar=document.getElementById("sidebar"),overlay=document.getElementById("overlay"),sbList=document.getElementById("sbList");
@@ -513,79 +456,43 @@ function ty(el,node,speed){return new Promise(function(res){node.style.opacity="
 async function reply(p){
   try{
     hist.push({role:"user",content:p});
-    let totalChars = hist.reduce(function(sum,m){return sum + m.content.length;}, 0);
-    while(hist.length > 1 && totalChars > 3000){
-      const removed = hist.shift();
-      totalChars -= removed.content.length;
-    }
-    const msgs=[{role:"system",content:"Kamu adalah KH AI, asisten cerdas berbahasa Indonesia. Jawab langsung, jelas, to the point. Kalau user minta kode, kasih kode dalam format markdown code block dengan nama bahasa di baris pertama."}].concat(hist);
-    idToken = await currentUser.getIdToken();
+    let totalChars=hist.reduce(function(sum,m){return sum+m.content.length;},0);
+    while(hist.length>1&&totalChars>3000){const removed=hist.shift();totalChars-=removed.content.length;}
+    const msgs=[{role:"system",content:"Kamu adalah KH AI, asisten cerdas berbahasa Indonesia."}].concat(hist);
+    idToken=await currentUser.getIdToken();
     const res=await fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+idToken},body:JSON.stringify({messages:msgs})});
-    if(res.status===429){hist.pop();document.getElementById("upgradeModal").classList.add("show");return null;}
+    if(res.status===429){
+      hist.pop();
+      const d=await res.json().catch(()=>({}));
+      const limit=d.usage?.limit||10;
+      const now=new Date();
+      const reset=new Date(now.getTime()+24*60*60*1000);
+      const resetStr=String(reset.getHours()).padStart(2,'0')+':'+String(reset.getMinutes()).padStart(2,'0');
+      document.getElementById("limitMsg").innerHTML='Kamu udah pakai '+limit+' request hari ini. Tunggu besok jam <b>'+resetStr+'</b> atau upgrade ke paket Basic.';
+      document.getElementById("upgradeModal").classList.add("show");
+      return null;
+    }
     if(res.status===401){hist.pop();await signOut(auth);window.location.href="login.html";return null;}
-    if(!res.ok){const e=await res.text();hist.pop();return {text:"API Error "+res.status+":\n"+e, finish_reason:"stop"};}
+    if(!res.ok){const e=await res.text();hist.pop();return {text:"API Error "+res.status+":\n"+e,finish_reason:"stop"};}
     const d=await res.json();
     if(d.usage){usage.used=d.usage.used;usage.limit=d.usage.limit;usage.premium=d.usage.premium;updateUsage();}
     let r="";
     if(d.choices&&d.choices[0]&&d.choices[0].message)r=d.choices[0].message.content;
     else r=JSON.stringify(d);
     hist.push({role:"assistant",content:r});
-    return { text: r, finish_reason: d.finish_reason || "stop" };
-  }catch(e){hist.pop();return {text:"Koneksi gagal:\n"+e.message, finish_reason:"stop"};}
-    }
-    
+    return {text:r,finish_reason:d.finish_reason||"stop"};
+  }catch(e){hist.pop();return {text:"Koneksi gagal:\n"+e.message,finish_reason:"stop"};}
+}
 
 /* ===== ACTIONS ===== */
 function attachActions(tb,replyText,userMsg,finishReason){
-  addAction(tb,"SALIN",function(){
-    const b=this;
-    if(navigator.clipboard)navigator.clipboard.writeText(replyText);
-    b.textContent="TERSALIN";b.classList.add("done");
-    setTimeout(function(){b.textContent="SALIN";b.classList.remove("done");},1500);
-  });
-  addAction(tb,"REGENERATE",async function(){
-    if(busy)return;
-    busy=true;hist.pop();
-    const row=tb.parentElement;
-    row.remove();
-    const l2=ld();
-    let r2=null;
-    try{r2=await reply(userMsg);}catch(e){r2={text:"Error: "+e.message,finish_reason:"stop"};}
-    l2.remove();
-    if(!r2||!r2.text){busy=false;return;}
-    const n2=addAI();
-    const c2=renderContent(r2.text);
-    await ty(n2.bubble,c2,50);
-    attachActions(n2.toolbar,r2.text,userMsg,r2.finish_reason);
-    busy=false;
-  });
-
-  // Tombol LANJUTKAN di BAWAH teks
-  if(finishReason === "length"){
-    const row=tb.parentElement;
-    const lanjutBtn=document.createElement("button");
-    lanjutBtn.className="lanjut-btn";
-    lanjutBtn.innerHTML='LANJUTKAN';
-    lanjutBtn.onclick=async function(){
-      if(busy)return;
-      busy=true;
-      this.remove();
-      const l3=ld();
-      const lanjutPrompt = "Lanjutkan jawaban sebelumnya dari titik terakhir tanpa mengulang. Teks terakhir: ..." + replyText.slice(-200);
-      let r3=null;
-      try{r3=await reply(lanjutPrompt);}catch(e){r3={text:"Error: "+e.message,finish_reason:"stop"};}
-      l3.remove();
-      if(r3&&r3.text){
-        const n3=addAI();
-        const c3=renderContent(r3.text);
-        await ty(n3.bubble,c3,50);
-        attachActions(n3.toolbar,r3.text,lanjutPrompt,r3.finish_reason);
-      }
-      busy=false;
-    };
-    row.appendChild(lanjutBtn);
+  addAction(tb,"SALIN",function(){const b=this;if(navigator.clipboard)navigator.clipboard.writeText(replyText);b.textContent="TERSALIN";b.classList.add("done");setTimeout(function(){b.textContent="SALIN";b.classList.remove("done");},1500);});
+  addAction(tb,"REGENERATE",async function(){if(busy)return;busy=true;hist.pop();tb.parentElement.remove();const l2=ld();let r2=null;try{r2=await reply(userMsg);}catch(e){r2={text:"Error: "+e.message,finish_reason:"stop"};}l2.remove();if(!r2||!r2.text){busy=false;return;}const n2=addAI();const c2=renderContent(r2.text);await ty(n2.bubble,c2,50);attachActions(n2.toolbar,r2.text,userMsg,r2.finish_reason);busy=false;});
+  if(finishReason==="length"){
+    addAction(tb,"LANJUTKAN",async function(){if(busy)return;busy=true;this.remove();const l3=ld();const lanjutPrompt="Lanjutkan jawaban sebelumnya dari titik terakhir tanpa mengulang. Teks terakhir: ..."+replyText.slice(-200);let r3=null;try{r3=await reply(lanjutPrompt);}catch(e){r3={text:"Error: "+e.message,finish_reason:"stop"};}l3.remove();if(r3&&r3.text){const n3=addAI();const c3=renderContent(r3.text);await ty(n3.bubble,c3,50);attachActions(n3.toolbar,r3.text,lanjutPrompt,r3.finish_reason);}busy=false;});
   }
-    }
+}
+
 function autoTitle(t){return t.length>30?t.substring(0,30)+"...":t;}
 function saveCurrentChat(){if(!currentChatId)return;const c=chats.find(x=>x.id===currentChatId);if(c){c.messages=hist;saveChats();renderSidebar();}}
 
@@ -595,20 +502,12 @@ async function sd(){
   const t=inp.value.trim();if(!t)return;
   if(!currentChatId){currentChatId="chat-"+Date.now();chats.unshift({id:currentChatId,title:autoTitle(t),messages:[]});saveChats();renderSidebar();}
   busy=true;btn.disabled=true;hideHero();addUser(t);inp.value="";ag();bt();
-  const l=ld();
-  let r=null;
+  const l=ld();let r=null;
   try{r=await reply(t);}catch(e){r={text:"Error: "+e.message,finish_reason:"stop"};}
   l.remove();
-  if(r&&r.text){
-    const n=addAI();
-    const c=renderContent(r.text);
-    await ty(n.bubble,c,50);
-    attachActions(n.toolbar,r.text,t,r.finish_reason);
-    speakText(r.text);
-    saveCurrentChat();
-  }
+  if(r&&r.text){const n=addAI();const c=renderContent(r.text);await ty(n.bubble,c,50);attachActions(n.toolbar,r.text,t,r.finish_reason);saveCurrentChat();}
   busy=false;btn.disabled=false;inp.focus();
-    }
+}
 
 /* ===== SIDEBAR ===== */
 function renderSidebar(){
@@ -628,287 +527,122 @@ function loadChat(id){
   hist.forEach(function(m){if(m.role==="user"){addUser(m.content);}else{const n=addAI();const cnt=renderContent(m.content);n.bubble.appendChild(cnt);}});
   bt();closeSb();
 }
-
-/* ===== SIDEBAR TOGGLE ===== */
 function openSb(){sidebar.classList.add("open");overlay.classList.add("show");}
 function closeSb(){sidebar.classList.remove("open");overlay.classList.remove("show");}
 document.getElementById("menuBtn").onclick=openSb;
 document.getElementById("sbClose").onclick=closeSb;
 overlay.onclick=closeSb;
-
-/* ===== NEW CHAT ===== */
 function newChat(){if(busy)return;currentChatId=null;hist=[];wrap.innerHTML="";showHero();wrap.appendChild(hero);closeSb();renderSidebar();inp.focus();}
 document.getElementById("sbNew").onclick=newChat;
+document.getElementById("logoutBtn").onclick=async function(){if(!confirm("Yakin mau keluar?"))return;await signOut(auth);window.location.href="login.html";};
 
-/* ===== LOGOUT ===== */
-document.getElementById("logoutBtn").onclick=async function(){
-  if(!confirm("Yakin mau keluar?"))return;
-  await signOut(auth);
-  window.location.href="login.html";
-};
-
-/* ===== INPUT ===== */
 /* ===== VOICE INPUT ===== */
-let recognition = null;
-let isRecording = false;
-if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'id-ID';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.onresult = function(e){
-    let text = '';
-    for(let i = e.resultIndex; i < e.results.length; i++){
-      text += e.results[i][0].transcript;
-    }
-    inp.value = text;
-    ag();
-  };
-  recognition.onend = function(){
-    isRecording = false;
-    document.getElementById("micBtn").classList.remove("recording");
-  };
-  recognition.onerror = function(e){
-    console.log("Speech error:", e.error);
-    isRecording = false;
-    document.getElementById("micBtn").classList.remove("recording");
-  };
+let recognition=null,isRecording=false;
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.lang='id-ID';recognition.continuous=false;recognition.interimResults=true;
+  recognition.onresult=function(e){let text='';for(let i=e.resultIndex;i<e.results.length;i++){text+=e.results[i][0].transcript;}inp.value=text;ag();};
+  recognition.onend=function(){isRecording=false;document.getElementById("micBtn").classList.remove("recording");};
+  recognition.onerror=function(){isRecording=false;document.getElementById("micBtn").classList.remove("recording");};
 }
-document.getElementById("micBtn").onclick = function(){
-  if(!recognition){alert("Browser kamu gak support voice input. Coba pakai Chrome.");return;}
-  if(isRecording){recognition.stop();isRecording=false;this.classList.remove("recording");return;}
-  isRecording = true;
-  this.classList.add("recording");
-  recognition.start();
-};
+document.getElementById("micBtn").onclick=function(){if(!recognition){alert("Browser gak support voice input.");return;}if(isRecording){recognition.stop();return;}isRecording=true;this.classList.add("recording");recognition.start();};
 
 /* ===== VOICE OUTPUT ===== */
-let speakOn = false;
-document.getElementById("speakBtn").onclick = function(){
-  speakOn = !speakOn;
-  this.classList.toggle("active", speakOn);
-  if(speakOn && 'speechSynthesis' in window){
-    const u = new SpeechSynthesisUtterance("Suara aktif");
-    u.lang = 'id-ID';
-    u.rate = 1.0;
-    speechSynthesis.speak(u);
-  } else if(!speakOn && 'speechSynthesis' in window){
-    speechSynthesis.cancel();
-  }
-};
-function speakText(text){
-  if(!speakOn || !('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const clean = text.replace(/```[\s\S]*?```/g, ' (kode) ').replace(/`[^`]+`/g, '').replace(/[#*_~\[\]()>]/g, '').replace(/\n+/g, '. ').substring(0, 500);
-  const u = new SpeechSynthesisUtterance(clean);
-  u.lang = 'id-ID';
-  u.rate = 1.0;
-  u.pitch = 1.0;
-  speechSynthesis.speak(u);
-}
-/* ===== PEMBAYARAN VIA TIKTOK ===== */
-const TIKTOK_USERNAME = "uhuystudioofficial";
-document.getElementById("dmBtn").onclick = function(){
-  window.open("https://www.tiktok.com/@uhuystudioofficial" + TIKTOK_USERNAME, "_blank");
-};
-/* ===== VOICE CHAT LEVEL 3 ===== */
-let voiceChatActive = false;
-let voiceRecognition = null;
-let isVoiceListening = false;
-let voiceHistory = [];
-let selectedVoice = null;
+let speakOn=false;
+document.getElementById("speakBtn").onclick=function(){speakOn=!speakOn;this.classList.toggle("active",speakOn);if(speakOn&&'speechSynthesis' in window){const u=new SpeechSynthesisUtterance("Suara aktif");u.lang='id-ID';speechSynthesis.speak(u);}else if(!speakOn&&'speechSynthesis' in window){speechSynthesis.cancel();}};
+function speakText(text){if(!speakOn||!('speechSynthesis' in window))return;speechSynthesis.cancel();const clean=text.replace(/```[\s\S]*?```/g,' (kode) ').replace(/`[^`]+`/g,'').replace(/[#*_~\[\]()>]/g,'').replace(/\n+/g,'. ').substring(0,500);const u=new SpeechSynthesisUtterance(clean);u.lang='id-ID';u.rate=1.0;u.pitch=1.0;speechSynthesis.speak(u);}
 
-const VOICE_SYSTEM_PROMPT = "Kamu adalah KH AI, teman ngobrol yang santai, ramah, dan empatik. Kamu ngobrol santai kayak teman dekat. Panggil user dengan 'kamu' atau 'lu' (santai). Jawab singkat, 1-3 kalimat aja, kayak ngobrol beneran. Kalau user curhat, dengerin dan kasih respon empatik. Kalau user bercanda, ikut ketawa. Jangan formal, jangan kaku, jangan kayak robot. Sesekali pakai bahasa gaul Indonesia.";
+/* ===== VOICE CHAT ===== */
+let voiceChatActive=false,voiceRecognition=null,isVoiceListening=false,voiceHistory=[],selectedVoice=null;
+const VOICE_SYSTEM_PROMPT="Kamu adalah KH AI, teman ngobrol yang santai, ramah, dan empatik. PENTING: Voice chat ini cuma buat ngobrol santai. Kalau user minta bikin kode, TOLAK dengan sopan: 'Mendingan ketik di chat biasa ya, biar jelas dan bisa di-copy.' Jawab SINGKAT, 1-3 kalimat aja. Panggil user dengan 'kamu' atau 'lu'. Jangan formal.";
+function getGreeting(){const h=new Date().getHours();if(h<11)return "Selamat pagi! Gimana tidurnya?";if(h<15)return "Halo! Udah makan siang?";if(h<18)return "Siang! Gimana harinya?";if(h<21)return "Malam! Gimana hari ini?";return "Malam! Belum tidur?";}
+function pickVoice(){if(!('speechSynthesis' in window))return null;const voices=speechSynthesis.getVoices();const idv=voices.filter(v=>v.lang.includes('id')||v.lang.includes('ID'));return idv.length>0?idv[0]:voices[0];}
+speechSynthesis.onvoiceschanged=()=>{selectedVoice=pickVoice();};selectedVoice=pickVoice();
 
-function getGreeting(){
-  const hour = new Date().getHours();
-  if(hour < 11) return "Selamat pagi! Gimana tidurnya?";
-  if(hour < 15) return "Halo! Udah makan siang?";
-  if(hour < 18) return "Siang! Gimana harinya?";
-  if(hour < 21) return "Malam! Gimana hari ini?";
-  return "Malam! Belum tidur?";
-}
-
-function pickVoice(){
-  if(!('speechSynthesis' in window)) return null;
-  const voices = speechSynthesis.getVoices();
-  const idVoices = voices.filter(v => v.lang.includes('id') || v.lang.includes('ID'));
-  if(idVoices.length > 0) return idVoices[0];
-  return voices[0];
-}
-
-speechSynthesis.onvoiceschanged = () => { selectedVoice = pickVoice(); };
-selectedVoice = pickVoice();
-
-document.getElementById("voiceChatBtn").onclick = function(){
-  if(voiceChatActive) return;
-  voiceChatActive = true;
-  this.classList.add("active");
+document.getElementById("voiceChatBtn").onclick=function(){
+  if(voiceChatActive)return;
+  voiceChatActive=true;this.classList.add("active");
   document.getElementById("voiceOverlay").classList.add("show");
-  
-  const greeting = getGreeting();
-  document.getElementById("voiceStatus").textContent = "KH AI";
-  document.getElementById("voiceText").textContent = greeting;
-  
-  setTimeout(() => {
-    speakVoice(greeting, () => {
-      startVoiceListening();
-    });
-  }, 500);
+  const greeting=getGreeting();
+  document.getElementById("voiceStatus").textContent="KH AI";
+  document.getElementById("voiceText").textContent=greeting;
+  setTimeout(()=>{speakVoice(greeting,()=>{startVoiceListening();});},500);
 };
-
-document.getElementById("voiceCloseBtn").onclick = function(){
-  voiceChatActive = false;
+document.getElementById("voiceCloseBtn").onclick=function(){
+  voiceChatActive=false;
   document.getElementById("voiceChatBtn").classList.remove("active");
   document.getElementById("voiceOverlay").classList.remove("show");
-  if(voiceRecognition) voiceRecognition.stop();
-  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(voiceRecognition)voiceRecognition.stop();
+  if('speechSynthesis' in window)speechSynthesis.cancel();
 };
-
-function speakVoice(text, callback){
-  if(!('speechSynthesis' in window)){
-    if(callback) callback();
-    return;
-  }
-  
+function speakVoice(text,callback){
+  if(!('speechSynthesis' in window)){if(callback)callback();return;}
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'id-ID';
-  u.rate = 1.0;
-  u.pitch = 1.05;
-  if(selectedVoice) u.voice = selectedVoice;
-  
-  const orb = document.getElementById("voiceOrb");
-  orb.classList.add("speaking");
-  orb.classList.remove("listening");
-  
-  u.onend = () => {
-    orb.classList.remove("speaking");
-    if(callback) callback();
-  };
-  
+  const u=new SpeechSynthesisUtterance(text);u.lang='id-ID';u.rate=1.0;u.pitch=1.05;
+  if(selectedVoice)u.voice=selectedVoice;
+  const orb=document.getElementById("voiceOrb");
+  orb.classList.add("speaking");orb.classList.remove("listening");
+  u.onend=()=>{orb.classList.remove("speaking");if(callback)callback();};
   speechSynthesis.speak(u);
 }
-
 function startVoiceListening(){
-  if(!voiceChatActive) return;
-  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
-  
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  voiceRecognition = new SR();
-  voiceRecognition.lang = 'id-ID';
-  voiceRecognition.continuous = false;
-  voiceRecognition.interimResults = true;
-  
-  const orb = document.getElementById("voiceOrb");
-  const status = document.getElementById("voiceStatus");
-  const textEl = document.getElementById("voiceText");
-  
-  voiceRecognition.onstart = () => {
-    isVoiceListening = true;
-    orb.classList.add("listening");
-    status.textContent = "Dengerin...";
-    textEl.textContent = "...";
+  if(!voiceChatActive)return;
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window))return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  voiceRecognition=new SR();voiceRecognition.lang='id-ID';voiceRecognition.continuous=false;voiceRecognition.interimResults=true;
+  const orb=document.getElementById("voiceOrb"),status=document.getElementById("voiceStatus"),textEl=document.getElementById("voiceText");
+  voiceRecognition.onstart=()=>{isVoiceListening=true;orb.classList.add("listening");status.textContent="Dengerin...";textEl.textContent="...";};
+  voiceRecognition.onresult=(e)=>{let text='';for(let i=e.resultIndex;i<e.results.length;i++){text+=e.results[i][0].transcript;}textEl.textContent=text;};
+  voiceRecognition.onend=async()=>{
+    isVoiceListening=false;orb.classList.remove("listening");
+    if(!voiceChatActive)return;
+    const userText=textEl.textContent.trim();
+    if(!userText||userText==="..."||userText==="Suara kamu bakal muncul di sini..."){setTimeout(startVoiceListening,500);return;}
+    status.textContent="Mikir...";orb.classList.add("speaking");
+    try{
+      const response=await voiceChatReply(userText);
+      const aiText=response.text||"Maaf, aku gak denger.";
+      status.textContent="KH AI";textEl.textContent=aiText;orb.classList.remove("speaking");
+      speakVoice(aiText,()=>{if(voiceChatActive)startVoiceListening();});
+    }catch(e){status.textContent="Error";textEl.textContent="Koneksi gagal.";setTimeout(()=>{if(voiceChatActive)startVoiceListening();},2000);}
   };
-  
-  voiceRecognition.onresult = (e) => {
-    let text = '';
-    for(let i = e.resultIndex; i < e.results.length; i++){
-      text += e.results[i][0].transcript;
-    }
-    textEl.textContent = text;
-  };
-  
-  voiceRecognition.onend = async () => {
-    isVoiceListening = false;
-    orb.classList.remove("listening");
-    if(!voiceChatActive) return;
-    
-    const userText = textEl.textContent.trim();
-    if(!userText || userText === "..." || userText === "Suara kamu bakal muncul di sini..."){
-      setTimeout(startVoiceListening, 500);
-      return;
-    }
-    
-    status.textContent = "Mikir...";
-    orb.classList.add("speaking");
-    
-    try {
-      const response = await voiceChatReply(userText);
-      const aiText = response.text || "Maaf, aku gak denger.";
-      
-      status.textContent = "KH AI";
-      textEl.textContent = aiText;
-      orb.classList.remove("speaking");
-      
-      speakVoice(aiText, () => {
-        if(voiceChatActive) startVoiceListening();
-      });
-    } catch(e) {
-      status.textContent = "Error";
-      textEl.textContent = "Koneksi gagal. Coba lagi.";
-      setTimeout(() => {
-        if(voiceChatActive) startVoiceListening();
-      }, 2000);
-    }
-  };
-  
-  voiceRecognition.onerror = () => {
-    isVoiceListening = false;
-    orb.classList.remove("listening");
-    if(voiceChatActive){
-      setTimeout(startVoiceListening, 1000);
-    }
-  };
-  
-  try {
-    voiceRecognition.start();
-  } catch(e) {
-    console.log("Recognition error:", e);
-  }
+  voiceRecognition.onerror=()=>{isVoiceListening=false;orb.classList.remove("listening");if(voiceChatActive){setTimeout(startVoiceListening,1000);}};
+  try{voiceRecognition.start();}catch(e){console.log("Recognition error:",e);}
+}
+async function voiceChatReply(userText){
+  const lower=userText.toLowerCase();
+  const codeKeywords=["bikin kode","buat kode","coding","programming","html","css","javascript","python","php","buatkan script","buat script","kode program"];
+  if(codeKeywords.some(k=>lower.includes(k))){return {text:"Waduh, buat bikin kode mendingan ketik di chat biasa ya. Voice chat cuma buat ngobrol aja."};}
+  voiceHistory.push({role:"user",content:userText});
+  if(voiceHistory.length>10)voiceHistory=voiceHistory.slice(-10);
+  const msgs=[{role:"system",content:VOICE_SYSTEM_PROMPT}].concat(voiceHistory);
+  idToken=await currentUser.getIdToken();
+  const res=await fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+idToken},body:JSON.stringify({messages:msgs})});
+  if(res.status===429){voiceHistory.pop();return {text:"Limit harian kamu habis. Tunggu besok ya."};}
+  if(!res.ok){voiceHistory.pop();return {text:"Koneksi gagal. Coba lagi ya."};}
+  const d=await res.json();
+  let reply="";
+  if(d.choices&&d.choices[0]&&d.choices[0].message){reply=d.choices[0].message.content;}else{reply="Maaf, aku gak bisa jawab sekarang.";}
+  voiceHistory.push({role:"assistant",content:reply});
+  return {text:reply};
 }
 
-async function voiceChatReply(userText){
-  voiceHistory.push({role:"user",content:userText});
-  if(voiceHistory.length > 10) voiceHistory = voiceHistory.slice(-10);
-  
-  const msgs = [{role:"system",content:VOICE_SYSTEM_PROMPT}].concat(voiceHistory);
-  
-  idToken = await currentUser.getIdToken();
-  const res = await fetch(WORKER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + idToken
-    },
-    body: JSON.stringify({messages: msgs})
-  });
-  
-  if(res.status === 429){
-    voiceHistory.pop();
-    return { text: "Limit harian kamu habis. Tunggu besok ya." };
-  }
-  if(!res.ok){
-    voiceHistory.pop();
-    return { text: "Koneksi gagal. Coba lagi ya." };
-  }
-  
-  const d = await res.json();
-  let reply = "";
-  if(d.choices && d.choices[0] && d.choices[0].message){
-    reply = d.choices[0].message.content;
-  } else {
-    reply = "Maaf, aku gak bisa jawab sekarang.";
-  }
-  
-  voiceHistory.push({role:"assistant",content:reply});
-  return { text: reply };
-    }
+/* ===== PAYMENT WA ===== */
+document.getElementById("waBtn").onclick=function(){
+  const pesan=encodeURIComponent("Halo Admin KH AI,\n\nSaya mau upgrade ke paket Basic (Rp 20.000/bulan).\n\nEmail akun KH AI saya: [ISI EMAIL KAMU]\n\nMohon info cara pembayarannya. Terima kasih.");
+  window.open("https://wa.me/"+WA_NUMBER+"?text="+pesan,"_blank");
+};
+
+/* ===== INPUT EVENTS ===== */
 inp.addEventListener("input",ag);
 inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sd();}});
 btn.addEventListener("click",sd);
+renderSidebar();
 inp.focus();
+
+/* ===== FIX INPUT KEYBOARD ===== */
+if(window.visualViewport){window.visualViewport.addEventListener("resize",function(){const c=document.getElementById("chat");if(c)c.scrollTop=c.scrollHeight;});}
+inp.addEventListener("focus",function(){setTimeout(function(){const c=document.getElementById("chat");if(c)c.scrollTop=c.scrollHeight;},300);});
 </script>
 </body>
-  </html>
+</html>
