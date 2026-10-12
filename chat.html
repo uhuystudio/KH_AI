@@ -96,6 +96,23 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .speak.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1)}
 .speak svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.voice-chat-btn{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
+.voice-chat-btn:hover{color:#ff0033;border-color:#8a0d20}
+.voice-chat-btn.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1);animation:pulse 1.5s infinite}
+.voice-chat-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.voice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.voice-overlay.show{display:flex}
+.voice-orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff5577,#ff0033 30%,#8a0d20 65%,#1a0509 100%);box-shadow:0 0 60px rgba(255,0,51,.7),0 0 120px rgba(255,0,51,.35),inset 0 0 30px rgba(255,255,255,.15);animation:breathe 2s ease-in-out infinite;position:relative;margin-bottom:30px}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.voice-orb.listening{animation:pulse-red 1s infinite}
+@keyframes pulse-red{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(255,0,51,.7)}50%{transform:scale(1.15);box-shadow:0 0 100px rgba(255,0,51,1)}}
+.voice-orb.speaking{animation:pulse-speak 0.6s infinite}
+@keyframes pulse-speak{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.voice-status{color:#fff;font-size:14px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;text-align:center;min-height:20px}
+.voice-text{color:#909090;font-size:12px;text-align:center;max-width:500px;line-height:1.7;margin-bottom:30px;min-height:60px}
+.voice-controls{display:flex;gap:12px}
+.voice-close{padding:12px 28px;background:transparent;border:1px solid #ff0033;border-radius:10px;color:#ff0033;font-family:monospace;font-size:12px;letter-spacing:.15em;cursor:pointer;text-transform:uppercase}
+.voice-close:hover{background:rgba(255,0,51,.1)}
 .send{width:34px;height:34px;display:grid;place-items:center;background:#ff0033;border:0;border-radius:9px;cursor:pointer;box-shadow:0 0 18px rgba(255,0,51,.45)}
 .send:disabled{background:#1e1e1e;box-shadow:none;cursor:not-allowed}
 .send svg{width:15px;height:15px}
@@ -203,6 +220,14 @@ code{font-family:'Courier New',monospace}
   </div>
 </div>
 
+<div class="voice-overlay" id="voiceOverlay">
+  <div class="voice-orb" id="voiceOrb"></div>
+  <div class="voice-status" id="voiceStatus">Tekan tombol buat mulai</div>
+  <div class="voice-text" id="voiceText">Suara kamu bakal muncul di sini...</div>
+  <div class="voice-controls">
+    <button class="voice-close" id="voiceCloseBtn">TUTUP</button>
+  </div>
+</div>
 <div id="app">
   <header>
     <div class="hleft">
@@ -253,6 +278,9 @@ code{font-family:'Courier New',monospace}
         <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
         <button class="mic" id="micBtn" title="Voice Input"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button>
 <button class="speak" id="speakBtn" title="Voice Output"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
+<button class="voice-chat-btn" id="voiceChatBtn" title="Voice Chat">
+  <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+</button>
 <button class="send" id="send"><svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg></button>
       </div>
     </div>
@@ -676,6 +704,199 @@ const TIKTOK_USERNAME = "uhuystudioofficial";
 document.getElementById("dmBtn").onclick = function(){
   window.open("https://www.tiktok.com/@uhuystudioofficial" + TIKTOK_USERNAME, "_blank");
 };
+/* ===== VOICE CHAT LEVEL 3 ===== */
+let voiceChatActive = false;
+let voiceRecognition = null;
+let isVoiceListening = false;
+let voiceHistory = [];
+let selectedVoice = null;
+
+const VOICE_SYSTEM_PROMPT = "Kamu adalah KH AI, teman ngobrol yang santai, ramah, dan empatik. Kamu ngobrol santai kayak teman dekat. Panggil user dengan 'kamu' atau 'lu' (santai). Jawab singkat, 1-3 kalimat aja, kayak ngobrol beneran. Kalau user curhat, dengerin dan kasih respon empatik. Kalau user bercanda, ikut ketawa. Jangan formal, jangan kaku, jangan kayak robot. Sesekali pakai bahasa gaul Indonesia.";
+
+function getGreeting(){
+  const hour = new Date().getHours();
+  if(hour < 11) return "Selamat pagi! Gimana tidurnya?";
+  if(hour < 15) return "Halo! Udah makan siang?";
+  if(hour < 18) return "Siang! Gimana harinya?";
+  if(hour < 21) return "Malam! Gimana hari ini?";
+  return "Malam! Belum tidur?";
+}
+
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  const idVoices = voices.filter(v => v.lang.includes('id') || v.lang.includes('ID'));
+  if(idVoices.length > 0) return idVoices[0];
+  return voices[0];
+}
+
+speechSynthesis.onvoiceschanged = () => { selectedVoice = pickVoice(); };
+selectedVoice = pickVoice();
+
+document.getElementById("voiceChatBtn").onclick = function(){
+  if(voiceChatActive) return;
+  voiceChatActive = true;
+  this.classList.add("active");
+  document.getElementById("voiceOverlay").classList.add("show");
+  
+  const greeting = getGreeting();
+  document.getElementById("voiceStatus").textContent = "KH AI";
+  document.getElementById("voiceText").textContent = greeting;
+  
+  setTimeout(() => {
+    speakVoice(greeting, () => {
+      startVoiceListening();
+    });
+  }, 500);
+};
+
+document.getElementById("voiceCloseBtn").onclick = function(){
+  voiceChatActive = false;
+  document.getElementById("voiceChatBtn").classList.remove("active");
+  document.getElementById("voiceOverlay").classList.remove("show");
+  if(voiceRecognition) voiceRecognition.stop();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+};
+
+function speakVoice(text, callback){
+  if(!('speechSynthesis' in window)){
+    if(callback) callback();
+    return;
+  }
+  
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'id-ID';
+  u.rate = 1.0;
+  u.pitch = 1.05;
+  if(selectedVoice) u.voice = selectedVoice;
+  
+  const orb = document.getElementById("voiceOrb");
+  orb.classList.add("speaking");
+  orb.classList.remove("listening");
+  
+  u.onend = () => {
+    orb.classList.remove("speaking");
+    if(callback) callback();
+  };
+  
+  speechSynthesis.speak(u);
+}
+
+function startVoiceListening(){
+  if(!voiceChatActive) return;
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
+  
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  voiceRecognition = new SR();
+  voiceRecognition.lang = 'id-ID';
+  voiceRecognition.continuous = false;
+  voiceRecognition.interimResults = true;
+  
+  const orb = document.getElementById("voiceOrb");
+  const status = document.getElementById("voiceStatus");
+  const textEl = document.getElementById("voiceText");
+  
+  voiceRecognition.onstart = () => {
+    isVoiceListening = true;
+    orb.classList.add("listening");
+    status.textContent = "Dengerin...";
+    textEl.textContent = "...";
+  };
+  
+  voiceRecognition.onresult = (e) => {
+    let text = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      text += e.results[i][0].transcript;
+    }
+    textEl.textContent = text;
+  };
+  
+  voiceRecognition.onend = async () => {
+    isVoiceListening = false;
+    orb.classList.remove("listening");
+    if(!voiceChatActive) return;
+    
+    const userText = textEl.textContent.trim();
+    if(!userText || userText === "..." || userText === "Suara kamu bakal muncul di sini..."){
+      setTimeout(startVoiceListening, 500);
+      return;
+    }
+    
+    status.textContent = "Mikir...";
+    orb.classList.add("speaking");
+    
+    try {
+      const response = await voiceChatReply(userText);
+      const aiText = response.text || "Maaf, aku gak denger.";
+      
+      status.textContent = "KH AI";
+      textEl.textContent = aiText;
+      orb.classList.remove("speaking");
+      
+      speakVoice(aiText, () => {
+        if(voiceChatActive) startVoiceListening();
+      });
+    } catch(e) {
+      status.textContent = "Error";
+      textEl.textContent = "Koneksi gagal. Coba lagi.";
+      setTimeout(() => {
+        if(voiceChatActive) startVoiceListening();
+      }, 2000);
+    }
+  };
+  
+  voiceRecognition.onerror = () => {
+    isVoiceListening = false;
+    orb.classList.remove("listening");
+    if(voiceChatActive){
+      setTimeout(startVoiceListening, 1000);
+    }
+  };
+  
+  try {
+    voiceRecognition.start();
+  } catch(e) {
+    console.log("Recognition error:", e);
+  }
+}
+
+async function voiceChatReply(userText){
+  voiceHistory.push({role:"user",content:userText});
+  if(voiceHistory.length > 10) voiceHistory = voiceHistory.slice(-10);
+  
+  const msgs = [{role:"system",content:VOICE_SYSTEM_PROMPT}].concat(voiceHistory);
+  
+  idToken = await currentUser.getIdToken();
+  const res = await fetch(WORKER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + idToken
+    },
+    body: JSON.stringify({messages: msgs})
+  });
+  
+  if(res.status === 429){
+    voiceHistory.pop();
+    return { text: "Limit harian kamu habis. Tunggu besok ya." };
+  }
+  if(!res.ok){
+    voiceHistory.pop();
+    return { text: "Koneksi gagal. Coba lagi ya." };
+  }
+  
+  const d = await res.json();
+  let reply = "";
+  if(d.choices && d.choices[0] && d.choices[0].message){
+    reply = d.choices[0].message.content;
+  } else {
+    reply = "Maaf, aku gak bisa jawab sekarang.";
+  }
+  
+  voiceHistory.push({role:"assistant",content:reply});
+  return { text: reply };
+    }
 inp.addEventListener("input",ag);
 inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sd();}});
 btn.addEventListener("click",sd);
