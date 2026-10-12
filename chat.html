@@ -96,6 +96,7 @@ footer{padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:rgb
 .speak.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1)}
 .speak svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.btn-group{display:flex;align-items:center;gap:6px}
 .voice-chat-btn{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid #222;border-radius:9px;color:#909090;cursor:pointer;margin-right:6px;transition:.2s}
 .voice-chat-btn:hover{color:#ff0033;border-color:#8a0d20}
 .voice-chat-btn.active{color:#ff0033;border-color:#ff0033;background:rgba(255,0,51,.1);animation:pulse 1.5s infinite}
@@ -275,15 +276,22 @@ code{font-family:'Courier New',monospace}
     <div class="ibox">
       <textarea id="in" rows="1" placeholder="Ketik perintah..."></textarea>
       <div class="bar">
-        <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
-        <button class="mic" id="micBtn" title="Voice Input"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button>
-<button class="speak" id="speakBtn" title="Voice Output"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
-<button class="voice-chat-btn" id="voiceChatBtn" title="Voice Chat">
-  <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
-</button>
-<button class="send" id="send"><svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg></button>
+  <div class="usage" id="usage">Kredit: <b>10</b>/10</div>
+  <div class="btn-group">
+    <button class="voice-chat-btn" id="voiceChatBtn" title="Voice Chat">
+      <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M12 8a1.5 1.5 0 0 0-1.5 1.5v3a1.5 1.5 0 0 0 3 0v-3A1.5 1.5 0 0 0 12 8z"/></svg>
+    </button>
+    <button class="mic" id="micBtn" title="Voice Input">
+      <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+    </button>
+    <button class="speak" id="speakBtn" title="Voice Output">
+      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </button>
+    <button class="send" id="send" title="Kirim">
+      <svg viewBox="0 0 24 24"><path d="M3 20.5L21 12 3 3.5 3 10l12 2-12 2z"/></svg>
+    </button>
+  </div>
       </div>
-    </div>
     <div class="disc">KH AI dapat membuat kesalahan. Periksa info penting.</div>
   </footer>
   </div>
