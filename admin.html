@@ -197,7 +197,6 @@ import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,getDocs,add
 const FIREBASE_CONFIG={apiKey:"AIzaSyAPx6XY8CRDrS8sxh00uNjWsymTu8jD95M",authDomain:"khai-b6e18.firebaseapp.com",projectId:"khai-b6e18",storageBucket:"khai-b6e18.firebasestorage.app",messagingSenderId:"903942429337",appId:"1:903942429337:web:9a21b3b38c7bc917be3608"};
 const PRIMARY_ADMIN="uhuystudio.1@gmail.com";
 const TIER_LIMITS={free:10,basic:50,pro:200,ultra:500};
-const BLOCKED_DOMAINS=["mailinator.com","tempmail.com","guerrillamail.com","10minutemail.com","throwawaymail.com","yopmail.com","sharklasers.com","grr.la","guerrillamailblock.com","temp-mail.org","fakeinbox.com","dispostable.com","mailnesia.com","trashmail.com","maildrop.cc","getnada.com","mailcatch.com","tempinbox.com","mintemail.com","spamgourmet.com","trash-mail.com"];
 
 const app=initializeApp(FIREBASE_CONFIG),auth=getAuth(app),db=getFirestore(app);
 let currentAdmin=null,allUsers=[],selectedUser=null;
@@ -248,11 +247,10 @@ document.getElementById("refreshStats").onclick=loadStats;
 
 document.getElementById("exportBtn").onclick=function(){
   if(!allUsers.length){alert("Refresh data dulu.");return;}
-  let csv="Email,Tier,Premium,Used,Limit,ChatCount\n";
-  allUsers.forEach(u=>{csv+='"'+u.email+'","'+(u.tier||"free")+'","'+(u.premium?"Ya":"Tidak")+'","'+(u.used||0)+'","'+(u.limit||10)+'","'+(u.chatCount||0)+'"\n';});
+  let csv="Email,Tier,Premium,Used,Limit\n";
+  allUsers.forEach(u=>{csv+='"'+u.email+'","'+(u.tier||"free")+'","'+(u.premium?"Ya":"Tidak")+'","'+(u.used||0)+'","'+(u.limit||10)+'"\n';});
   const blob=new Blob([csv],{type:"text/csv"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="khai_users_"+Date.now()+".csv";a.click();
-  logAction("EXPORT","Export CSV: "+allUsers.length+" user");
 };
 
 function loadUsers(){
@@ -262,7 +260,7 @@ function loadUsers(){
   if(search)filtered=allUsers.filter(u=>u.email.toLowerCase().includes(search));
   if(!filtered.length){list.innerHTML='<div class="info">Tidak ada user.</div>';return;}
   filtered.sort((a,b)=>{if(a.premium&&!b.premium)return -1;if(!a.premium&&b.premium)return 1;return a.email.localeCompare(b.email);});
-  list.innerHTML=filtered.map(u=>`<div class="user-item" onclick="showUserDetail('${u.email}')"><div class="email">${u.email}</div><div class="meta"><span class="tier tier-${u.tier||"free"}">${u.tier||"free"}</span><span>Used: ${u.used||0}</span><span>Limit: ${u.limit||10}</span><span>Chat: ${u.chatCount||0}</span></div></div>`).join("");
+  list.innerHTML=filtered.map(u=>`<div class="user-item" onclick="showUserDetail('${u.email}')"><div class="email">${u.email}</div><div class="meta"><span class="tier tier-${u.tier||"free"}">${u.tier||"free"}</span><span>Used: ${u.used||0}</span><span>Limit: ${u.limit||10}</span></div></div>`).join("");
 }
 document.getElementById("searchUser").addEventListener("input",loadUsers);
 
@@ -278,37 +276,30 @@ window.showUserDetail=async function(email){
     <div class="detail-row"><span class="key">Email</span><span class="val">${u.email}</span></div>
     <div class="detail-row"><span class="key">Tier</span><span class="val">${u.tier||"free"}</span></div>
     <div class="detail-row"><span class="key">Premium</span><span class="val">${u.premium?"Ya":"Tidak"}</span></div>
-    <div class="detail-row"><span class="key">Premium Until</span><span class="val">${u.premiumUntil?new Date(u.premiumUntil).toLocaleDateString('id-ID'):"-"}</span></div>
     <div class="detail-row"><span class="key">Used</span><span class="val">${u.used||0} / ${u.limit||10}</span></div>
     <div class="detail-row"><span class="key">Chat Count</span><span class="val">${mem.chatCount||0}</span></div>
     <div class="detail-row"><span class="key">Persona</span><span class="val">${set.persona||"default"}</span></div>
-    <div class="detail-row"><span class="key">Custom Prompt</span><span class="val">${set.customPrompt||"-"}</span></div>
     <div class="detail-row"><span class="key">Nickname</span><span class="val">${set.nickname||"-"}</span></div>
-    <div class="detail-row"><span class="key">Memory</span><span class="val">${mem.summary?mem.summary.substring(0,100)+"...":"Kosong"}</span></div>
-    ${mem.summary?`<div class="chat-log"><div class="who">Memory Log</div>${mem.summary.split("\n").map(l=>`<div class="chat-msg ai">${l}</div>`).join("")}</div>`:""}
+    <div class="detail-row"><span class="key">Memory</span><span class="val">${mem.summary?mem.summary.substring(0,80)+"...":"Kosong"}</span></div>
   `;
   document.getElementById("userModal").classList.add("show");
 };
 
 document.getElementById("resetLimitBtn").onclick=async function(){
   if(!selectedUser)return;
-  if(!confirm("Reset limit harian untuk "+selectedUser+"?"))return;
+  if(!confirm("Reset limit "+selectedUser+"?"))return;
   await updateDoc(doc(db,"users",selectedUser),{used:0,start:Date.now()});
-  await logAction("RESET_LIMIT","Reset limit: "+selectedUser);
-  alert("Limit direset!");
-  loadStats();
+  alert("Limit direset!");loadStats();
   document.getElementById("userModal").classList.remove("show");
 };
 
 document.getElementById("deleteUserBtn").onclick=async function(){
   if(!selectedUser)return;
-  if(!confirm("HAPUS user "+selectedUser+"? Ini gak bisa dibatalin!"))return;
+  if(!confirm("HAPUS "+selectedUser+"?"))return;
   await deleteDoc(doc(db,"users",selectedUser));
   await deleteDoc(doc(db,"memories",selectedUser)).catch(()=>{});
   await deleteDoc(doc(db,"settings",selectedUser)).catch(()=>{});
-  await logAction("DELETE_USER","Hapus user: "+selectedUser);
-  alert("User dihapus!");
-  loadStats();
+  alert("User dihapus!");loadStats();
   document.getElementById("userModal").classList.remove("show");
 };
 
@@ -318,7 +309,7 @@ document.getElementById("activateBtn").onclick=async function(){
   const days=parseInt(document.getElementById("days").value)||30;
   const msg=document.getElementById("msg");
   if(!email||email.indexOf("@")===-1){msg.textContent="Email tidak valid.";msg.style.color="#ff0033";return;}
-  this.disabled=true;msg.textContent="Memproses...";msg.style.color="#909090";
+  this.disabled=true;msg.textContent="Memproses...";
   try{
     const userRef=doc(db,"users",email);
     const userDoc=await getDoc(userRef);
@@ -326,10 +317,8 @@ document.getElementById("activateBtn").onclick=async function(){
     const premiumUntil=Date.now()+(days*24*60*60*1000);
     if(!userDoc.exists()){await setDoc(userRef,{email:email,used:0,limit:limit,start:Date.now(),premium:tier!=="free",premiumUntil:tier!=="free"?premiumUntil:0,tier:tier});}
     else{await updateDoc(userRef,{limit:limit,premium:tier!=="free",premiumUntil:tier!=="free"?premiumUntil:0,tier:tier});}
-    msg.textContent="Berhasil! "+email+" sekarang "+tier.toUpperCase();
-    msg.style.color="#ff0033";
+    msg.textContent="Berhasil! "+email+" → "+tier.toUpperCase();msg.style.color="#ff0033";
     document.getElementById("email").value="";
-    await logAction("ACTIVATE","Aktivasi "+email+" → "+tier);
     loadStats();
   }catch(e){msg.textContent="Error: "+e.message;msg.style.color="#ff0033";}
   this.disabled=false;
@@ -344,10 +333,8 @@ document.getElementById("blockBtn").onclick=async function(){
   this.disabled=true;blockMsg.textContent="Memblokir...";
   try{
     await setDoc(doc(db,"blocked_emails",email),{email:email,reason:reason,blockedAt:Date.now()});
-    blockMsg.textContent="Email "+email+" diblokir.";
-    blockMsg.style.color="#ff0033";
+    blockMsg.textContent="Email "+email+" diblokir.";blockMsg.style.color="#ff0033";
     document.getElementById("blockEmail").value="";document.getElementById("blockReason").value="";
-    await logAction("BLOCK","Blokir: "+email+" ("+reason+")");
     loadBlockedEmails();loadStats();
   }catch(e){blockMsg.textContent="Error: "+e.message;blockMsg.style.color="#ff0033";}
   this.disabled=false;
@@ -370,7 +357,6 @@ async function loadBlockedEmails(){
 window.unblockEmail=async function(email){
   if(!confirm("Unblock "+email+"?"))return;
   await deleteDoc(doc(db,"blocked_emails",email));
-  await logAction("UNBLOCK","Unblock: "+email);
   loadBlockedEmails();loadStats();
 };
 
@@ -383,10 +369,8 @@ document.getElementById("addAdminBtn").onclick=async function(){
   this.disabled=true;adminMsg.textContent="Menambah...";
   try{
     await setDoc(doc(db,"admins",email),{email:email,name:name||"Admin",active:true,addedBy:currentAdmin.email,addedAt:Date.now()});
-    adminMsg.textContent="Admin "+email+" ditambahkan.";
-    adminMsg.style.color="#ff0033";
+    adminMsg.textContent="Admin "+email+" ditambahkan.";adminMsg.style.color="#ff0033";
     document.getElementById("newAdminEmail").value="";document.getElementById("newAdminName").value="";
-    await logAction("ADD_ADMIN","Tambah admin: "+email);
     loadAdmins();
   }catch(e){adminMsg.textContent="Error: "+e.message;adminMsg.style.color="#ff0033";}
   this.disabled=false;
@@ -400,7 +384,7 @@ async function loadAdmins(){
     const snapshot=await getDocs(collection(db,"admins"));
     let html=`<div class="user-item"><div class="email">${PRIMARY_ADMIN} <span class="admin-badge">OWNER</span></div><div class="meta"><span>Admin Utama</span></div></div>`;
     snapshot.forEach(d=>{const data=d.data();
-      html+=`<div class="user-item"><div class="email">${data.email} <span class="admin-badge">ADMIN</span></div><div class="meta"><span>${data.name}</span><span>Added: ${new Date(data.addedAt).toLocaleDateString('id-ID')}</span></div><button class="danger mini" style="margin-top:8px" onclick="removeAdmin('${data.email}')">HAPUS ADMIN</button></div>`;});
+      html+=`<div class="user-item"><div class="email">${data.email} <span class="admin-badge">ADMIN</span></div><div class="meta"><span>${data.name}</span></div><button class="danger mini" style="margin-top:8px" onclick="removeAdmin('${data.email}')">HAPUS ADMIN</button></div>`;});
     list.innerHTML=html;
   }catch(e){list.innerHTML='<div class="info">Error: '+e.message+'</div>';}
 }
@@ -408,7 +392,6 @@ async function loadAdmins(){
 window.removeAdmin=async function(email){
   if(!confirm("Hapus admin "+email+"?"))return;
   await deleteDoc(doc(db,"admins",email));
-  await logAction("REMOVE_ADMIN","Hapus admin: "+email);
   loadAdmins();
 };
 
@@ -420,10 +403,8 @@ document.getElementById("bcBtn").onclick=async function(){
   this.disabled=true;bcMsg.textContent="Mengirim...";
   try{
     await addDoc(collection(db,"broadcasts"),{title:title,message:message,admin:currentAdmin.email,createdAt:Date.now()});
-    bcMsg.textContent="Broadcast terkirim ke "+allUsers.length+" user.";
-    bcMsg.style.color="#ff0033";
+    bcMsg.textContent="Broadcast terkirim ke "+allUsers.length+" user.";bcMsg.style.color="#ff0033";
     document.getElementById("bcTitle").value="";document.getElementById("bcMessage").value="";
-    await logAction("BROADCAST","Broadcast: "+title);
   }catch(e){bcMsg.textContent="Error: "+e.message;bcMsg.style.color="#ff0033";}
   this.disabled=false;
 };
@@ -443,4 +424,4 @@ async function loadLogs(){
 }
 </script>
 </body>
-                       </html>
+        </html>
