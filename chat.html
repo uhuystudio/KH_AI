@@ -362,7 +362,51 @@ function getSystemPrompt(){
   }
   return base;
 }
-function parseMarkdown(text){let html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");const ic=[];html=html.replace(/`([^`\n]+?)`/g,function(m,c){ic.push(c);return "\u0000IC"+(ic.length-1)+"\u0000";});html=html.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");html=html.replace(/\*(.+?)\*/g,"<em>$1</em>");html=html.replace(/~~(.+?)~~/g,'<span style="text-decoration:line-through;">$1</span>');html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#ff0033;">$1</a>');html=html.replace(/^### (.+)$/gm,'<div style="font-size:15px;font-weight:700;color:#fff;margin:12px 0 6px;">$1</div>');html=html.replace(/^## (.+)$/gm,'<div style="font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;">$1</div>');html=html.replace(/^# (.+)$/gm,'<div style="font-size:20px;font-weight:800;color:#fff;margin:16px 0 10px;">$1</div>');html=html.replace(/^---$/gm,'<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');html=html.replace(/^&gt; (.+)$/gm,'<div style="border-left:3px solid #ff0033;padding:6px 12px;margin:8px 0;color:#b0b0b0;font-style:italic;">$1</div>');html=html.replace(/^(\s*)[-\*] (.+)$/gm,function(m,i,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;">• '+c+'</div>';});html=html.replace(/^(\s*)(\d+)\. (.+)$/gm,function(m,i,n,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;">'+n+'. '+c+'</div>';});html=html.replace(/\n/g,"<br>");html=html.replace(/\u0000IC(\d+)\u0000/g,function(m,i){return '<code style="background:#151515;padding:2px 6px;border-radius:4px;color:#ff5577;font-size:12.5px;border:1px solid #222;">'+ic[parseInt(i)]+'</code>';});return html;}
+function parseMarkdown(text){
+  let html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const ic=[];
+  html=html.replace(/`([^`\n]+?)`/g,function(m,c){ic.push(c);return "\u0000IC"+(ic.length-1)+"\u0000";});
+  html=html.replace(/((?:^\|.+\|\s*$\n?)+)/gm,function(tableBlock){
+    const lines=tableBlock.trim().split("\n");
+    if(lines.length<2)return tableBlock;
+    const isSep=function(l){return /^\|[\s\-:|]+\|$/.test(l.trim());};
+    if(!isSep(lines[1]))return tableBlock;
+    const parseRow=function(l){
+      return l.trim().replace(/^\||\|$/g,"").split("|").map(function(c){return c.trim();});
+    };
+    const headers=parseRow(lines[0]);
+    const rows=lines.slice(2).map(parseRow);
+    let t='<div style="overflow-x:auto;margin:12px 0"><table style="width:100%;border-collapse:collapse;font-size:12.5px;background:#050505;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden">';
+    t+='<thead><tr>';
+    headers.forEach(function(h){
+      t+='<th style="padding:9px 12px;background:#0d0d0d;color:#ff0033;text-align:left;border-bottom:1px solid #1e1e1e;font-weight:700;letter-spacing:.05em">'+h+'</th>';
+    });
+    t+='</tr></thead><tbody>';
+    rows.forEach(function(r){
+      t+='<tr>';
+      r.forEach(function(c){
+        t+='<td style="padding:9px 12px;color:#d8d8d8;border-bottom:1px solid #141414;vertical-align:top">'+c+'</td>';
+      });
+      t+='</tr>';
+    });
+    t+='</tbody></table></div>';
+    return t;
+  });
+  html=html.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  html=html.replace(/\*(.+?)\*/g,"<em>$1</em>");
+  html=html.replace(/~~(.+?)~~/g,'<span style="text-decoration:line-through;">$1</span>');
+  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#ff0033;">$1</a>');
+  html=html.replace(/^### (.+)$/gm,'<div style="font-size:15px;font-weight:700;color:#fff;margin:12px 0 6px;">$1</div>');
+  html=html.replace(/^## (.+)$/gm,'<div style="font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;">$1</div>');
+  html=html.replace(/^# (.+)$/gm,'<div style="font-size:20px;font-weight:800;color:#fff;margin:16px 0 10px;">$1</div>');
+  html=html.replace(/^---$/gm,'<hr style="border:0;border-top:1px solid #2a2a2a;margin:14px 0;">');
+  html=html.replace(/^&gt; (.+)$/gm,'<div style="border-left:3px solid #ff0033;padding:6px 12px;margin:8px 0;color:#b0b0b0;font-style:italic;">$1</div>');
+  html=html.replace(/^(\s*)[-\*] (.+)$/gm,function(m,i,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;">• '+c+'</div>';});
+  html=html.replace(/^(\s*)(\d+)\. (.+)$/gm,function(m,i,n,c){const p=16+(i.length*8);return '<div style="padding-left:'+p+'px;position:relative;margin:3px 0;color:#d8d8d8;">'+n+'. '+c+'</div>';});
+  html=html.replace(/\n/g,"<br>");
+  html=html.replace(/\u0000IC(\d+)\u0000/g,function(m,i){return '<code style="background:#151515;padding:2px 6px;border-radius:4px;color:#ff5577;font-size:12.5px;border:1px solid #222;">'+ic[parseInt(i)]+'</code>';});
+  return html;
+}
 function renderContent(text){const container=document.createElement("div");const parts=text.split(/```/);for(let i=0;i<parts.length;i++){if(i%2===0){if(parts[i].trim()){const p=document.createElement("div");p.style.whiteSpace="pre-wrap";p.innerHTML=parseMarkdown(parts[i]);container.appendChild(p);}}else{const block=parts[i];const lines=block.split("\n");let lang="code",code=block;if(lines[0]&&lines[0].trim()&&!lines[0].includes(" ")&&lines[0].length<20){lang=lines[0].trim().toLowerCase();code=lines.slice(1).join("\n");}code=code.replace(/^\n+|\n+$/g,"");const cb=document.createElement("div");cb.className="codeblock";const head=document.createElement("div");head.className="codehead";const langEl=document.createElement("span");langEl.className="codelang";langEl.textContent=lang;const btns=document.createElement("div");btns.className="codebtns";const copyBtn=document.createElement("button");copyBtn.className="codebtn";copyBtn.textContent="COPY";copyBtn.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(code);copyBtn.textContent="OK";setTimeout(function(){copyBtn.textContent="COPY";},1500);};btns.appendChild(copyBtn);head.appendChild(langEl);head.appendChild(btns);const body=document.createElement("div");body.className="codebody";const pre=document.createElement("pre");const codeEl=document.createElement("code");codeEl.textContent=code;pre.appendChild(codeEl);body.appendChild(pre);cb.appendChild(head);cb.appendChild(body);if(lang==="html"||lang==="css"||lang==="javascript"||lang==="js"){let previewOpen=false,previewIframe=null;const codeBtn=document.createElement("button");codeBtn.className="codebtn";codeBtn.style.display="none";codeBtn.textContent="CODE";codeBtn.onclick=function(){if(previewIframe){previewIframe.remove();previewIframe=null;}pre.style.display="block";previewOpen=false;codeBtn.style.display="none";pv.style.display="inline-flex";};const pv=document.createElement("button");pv.className="codebtn";pv.textContent="PREVIEW";pv.onclick=function(){if(previewOpen)return;pre.style.display="none";previewIframe=document.createElement("iframe");previewIframe.sandbox="allow-scripts";previewIframe.srcdoc=lang==="html"?code:lang==="css"?'<html><head><style>'+code+'</style></head><body><h1>Preview CSS</h1><p>Contoh teks.</p><button>Tombol</button></body></html>':'<html><body><script>'+code+'<\/script></body></html>';body.appendChild(previewIframe);previewOpen=true;pv.style.display="none";codeBtn.style.display="inline-flex";};btns.appendChild(codeBtn);btns.appendChild(pv);}container.appendChild(cb);}}return container;}
 const chat=document.getElementById("chat"),wrap=document.getElementById("wrap"),inp=document.getElementById("in"),btn=document.getElementById("send"),hero=document.getElementById("hero");
 const sidebar=document.getElementById("sidebar"),overlay=document.getElementById("overlay"),sbList=document.getElementById("sbList");
@@ -477,7 +521,7 @@ document.getElementById("micBtn").onclick=function(){if(!recognition){alert("Bro
 let speakOn=false;
 document.getElementById("speakBtn").onclick=function(){speakOn=!speakOn;this.classList.toggle("active",speakOn);if(speakOn&&'speechSynthesis' in window){const u=new SpeechSynthesisUtterance("Suara aktif");u.lang='id-ID';speechSynthesis.speak(u);}else if(!speakOn&&'speechSynthesis' in window){speechSynthesis.cancel();}};
 function speakText(text){if(!speakOn||!('speechSynthesis' in window))return;speechSynthesis.cancel();const clean=text.replace(/```[\s\S]*?```/g,' (kode) ').replace(/`[^`]+`/g,'').replace(/[#*_~\[\]()>]/g,'').replace(/\n+/g,'. ').substring(0,500);const u=new SpeechSynthesisUtterance(clean);u.lang=userSettings.lang==='en'?'en-US':'id-ID';u.rate=1.0;u.pitch=userSettings.voice==='male'?0.9:1.05;speechSynthesis.speak(u);}
-document.getElementById("imageBtn").onclick=async function(){const prompt=prompt("Mau gambar apa?");if(!prompt)return;busy=true;hideHero();addUser("Buat gambar: "+prompt);const l=ld();try{const url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)+"?width=1024&height=1024&nologo=true";const n=addAI();const img=document.createElement("div");img.className="image-result";const image=document.createElement("img");image.src=url;image.alt=prompt;image.onload=()=>{bt();};img.appendChild(image);n.bubble.appendChild(img);const txt=document.createElement("div");txt.style.marginTop="10px";txt.textContent="Ini gambar yang kamu minta: "+prompt;n.bubble.appendChild(txt);l.remove();saveCurrentChat();}catch(e){l.remove();const n=addAI();n.bubble.textContent="Gagal bikin gambar.";}busy=false;};
+document.getElementById("imageBtn").onclick=async function(){const prompt=prompt("Mau gambar apa?");if(!prompt)return;busy=true;hideHero();addUser("Buat gambar: "+prompt);const l=ld();try{const url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)+"?width=768&height=768&model=flux&nologo=true&seed="+Date.now();const n=addAI();const img=document.createElement("div");img.className="image-result";const image=document.createElement("img");image.src=url;image.alt=prompt;image.onload=()=>{bt();};image.onerror=()=>{n.bubble.innerHTML='<div style="color:#ff0033;font-size:12px">Gagal generate gambar. Coba lagi nanti.</div>';};img.appendChild(image);n.bubble.appendChild(img);const txt=document.createElement("div");txt.style.marginTop="10px";txt.textContent="Ini gambar yang kamu minta: "+prompt;n.bubble.appendChild(txt);l.remove();saveCurrentChat();}catch(e){l.remove();const n=addAI();n.bubble.textContent="Gagal bikin gambar.";}busy=false;};
 document.getElementById("uploadBtn").onclick=function(){document.getElementById("fileInput").click();};
 document.getElementById("fileInput").onchange=async function(e){
   const file=e.target.files[0];
@@ -647,4 +691,4 @@ Tulis SINGKAT dan PADAT. Maksimal 300 kata.`;
 document.getElementById("handoffBtn").onclick=generateHandoffSummary;
 </script>
 </body>
-        </html>
+                         </html>
